@@ -49,7 +49,7 @@ export default function AboutPage() {
             <FadeIn>
                 <h1 className="font-headline text-4xl font-bold text-primary">About Our Driving School</h1>
                 <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-                    Pioneering safe and confident drivers in Thiyagadurgam for over 15 years.
+                    Pioneering safe and confident drivers in Thiyagadurgam for over 25 years.
                 </p>
             </FadeIn>
         </section>
