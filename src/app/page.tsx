@@ -13,18 +13,8 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <section className="relative h-[70vh] w-full">
-           <Image
-            src="https://placehold.co/1920x1080.png"
-            alt="Scenic road for driving"
-            layout="fill"
-            objectFit="cover"
-            className="opacity-20 dark:opacity-10"
-            data-ai-hint="scenic road driving"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-          <div className="container relative mx-auto flex h-full flex-col items-center justify-center px-4 text-center">
+        <section className="w-full py-20 md:py-32">
+          <div className="container mx-auto flex h-full flex-col items-center justify-center px-4 text-center">
             <FadeIn delay="delay-100">
               <h1 className="font-headline text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl">
                 Sri Senthil Murugan Driving School
@@ -60,12 +50,12 @@ export default function Home() {
               <FadeIn direction="right">
                 <div className="relative h-80 w-full rounded-lg shadow-xl md:h-96">
                   <Image
-                    src="https://placehold.co/600x400.png"
-                    alt="Instructor with a student in a car"
+                    src="https://storage.googleapis.com/res_studio/smds-herosec/original.png"
+                    alt="Sri Senthil Murugan Driving School"
                     layout="fill"
                     objectFit="cover"
                     className="rounded-lg"
-                    data-ai-hint="driving instructor student"
+                    data-ai-hint="driving school illustration"
                   />
                 </div>
               </FadeIn>
@@ -127,37 +117,16 @@ export default function Home() {
             <FadeIn>
               <h2 className="font-headline text-3xl font-bold">What Our Students Say</h2>
               <p className="mx-auto mt-2 max-w-2xl text-muted-foreground">
-                We are proud of our 5-star rating on Google. Here's what our happy customers have to say.
+                We are proud of our 5-star rating on Google. Check out what our students have to say!
               </p>
             </FadeIn>
-            <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                { name: "Priya K.", review: "Excellent teaching! I got my license on the first try. The instructor was very patient and professional." },
-                { name: "Arun S.", review: "The best driving school in the area. They provide clear instructions and build your confidence." },
-                { name: "Sunita M.", review: "Highly recommended! Their license assistance service saved me a lot of time and effort." },
-              ].map((testimonial, index) => (
-                <FadeIn key={index} delay={`delay-${(index + 1) * 200}`}>
-                  <Card className="h-full text-left shadow-lg">
-                    <CardContent className="flex h-full flex-col justify-between pt-6">
-                      <div>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                        <p className="mt-4 text-muted-foreground">"{testimonial.review}"</p>
-                      </div>
-                      <p className="mt-4 font-bold">- {testimonial.name}</p>
-                    </CardContent>
-                  </Card>
-                </FadeIn>
-              ))}
-            </div>
-             <FadeIn delay="delay-500">
-               <Button asChild variant="outline" size="lg" className="mt-12">
-                  <a href="#" target="_blank" rel="noopener noreferrer">View All Google Reviews</a>
-               </Button>
-             </FadeIn>
+            <FadeIn delay="delay-200">
+              <Button asChild variant="outline" size="lg" className="mt-8">
+                <a href="https://www.google.com/search?q=sri+senthil+murugan+driving+school+reviews" target="_blank" rel="noopener noreferrer">
+                  <Star className="mr-2 h-5 w-5 fill-yellow-400 text-yellow-400" /> View All Google Reviews
+                </a>
+              </Button>
+            </FadeIn>
           </div>
         </section>
 

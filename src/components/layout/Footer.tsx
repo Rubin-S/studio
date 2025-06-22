@@ -35,9 +35,9 @@ export default function Footer() {
           <div>
             <h3 className="font-headline font-semibold">Follow Us</h3>
             <div className="mt-4 flex space-x-4">
-              <a href="#" className="text-muted-foreground transition-colors hover:text-primary"><Twitter /></a>
-              <a href="#" className="text-muted-foreground transition-colors hover:text-primary"><Facebook /></a>
-              <a href="#" className="text-muted-foreground transition-colors hover:text-primary"><Instagram /></a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-primary"><Twitter /></a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-primary"><Facebook /></a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-primary"><Instagram /></a>
             </div>
           </div>
         </div>

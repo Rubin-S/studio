@@ -47,7 +47,7 @@ export default function AboutPage() {
                 <div className="grid gap-12 md:grid-cols-2 md:items-center">
                     <FadeIn direction='left'>
                         <div className="relative h-80 w-full rounded-lg shadow-xl md:h-96">
-                            <Image src="https://placehold.co/600x400.png" alt="Driving school office" layout="fill" objectFit="cover" className="rounded-lg" data-ai-hint="office interior modern"/>
+                            <Image src="https://storage.googleapis.com/res_studio/smds-herosec/original.png" alt="Sri Senthil Murugan Driving School" layout="fill" objectFit="cover" className="rounded-lg" data-ai-hint="driving school illustration"/>
                         </div>
                     </FadeIn>
                     <FadeIn direction='right'>

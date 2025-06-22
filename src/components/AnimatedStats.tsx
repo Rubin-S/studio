@@ -2,14 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { Users, Award, CalendarDays } from 'lucide-react';
+import { Users, CalendarDays } from 'lucide-react';
 import { FadeIn } from '@/components/ui/fade-in';
-
-const stats = [
-  { icon: CalendarDays, value: 15, label: "Years of Experience" },
-  { icon: Users, value: 1200, label: "Happy Customers Trained" },
-  { icon: Award, value: 1000, label: "Licenses Acquired" },
-];
 
 function AnimatedCounter({ endValue }: { endValue: number }) {
   const [count, setCount] = useState(0);
@@ -33,7 +27,7 @@ function AnimatedCounter({ endValue }: { endValue: number }) {
     requestAnimationFrame(animate);
   }, [endValue]);
   
-  return <span className="font-headline text-5xl font-bold text-primary">{count.toLocaleString()}+</span>;
+  return <>{count.toLocaleString()}</>;
 }
 
 export default function AnimatedStats() {
@@ -45,20 +39,29 @@ export default function AnimatedStats() {
   return (
     <section id="stats" ref={ref} className="bg-secondary py-16 md:py-24">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
-          {stats.map((stat, index) => (
-            <FadeIn key={stat.label} delay={`delay-${(index + 1) * 150}`}>
-              <div className="flex flex-col items-center">
-                <div className="rounded-full bg-primary/10 p-4 text-primary">
-                   <stat.icon className="h-10 w-10" />
-                </div>
-                <div className="mt-4">
-                  {inView ? <AnimatedCounter endValue={stat.value} /> : <span className="font-headline text-5xl font-bold text-primary">0+</span>}
-                </div>
-                <p className="mt-2 text-lg text-muted-foreground">{stat.label}</p>
+        <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-2 lg:w-2/3 mx-auto">
+          <FadeIn delay="delay-150">
+            <div className="flex flex-col items-center">
+              <div className="rounded-full bg-primary/10 p-4 text-primary">
+                 <CalendarDays className="h-10 w-10" />
               </div>
-            </FadeIn>
-          ))}
+              <div className="mt-4 font-headline text-5xl font-bold text-primary">
+                Almost {inView ? <AnimatedCounter endValue={25} /> : '0'}+
+              </div>
+              <p className="mt-2 text-lg text-muted-foreground">Years of Experience</p>
+            </div>
+          </FadeIn>
+          <FadeIn delay="delay-300">
+            <div className="flex flex-col items-center">
+              <div className="rounded-full bg-primary/10 p-4 text-primary">
+                 <Users className="h-10 w-10" />
+              </div>
+              <div className="mt-4 font-headline text-5xl font-bold text-primary">
+                {inView ? <AnimatedCounter endValue={25} /> : '0'}k+
+              </div>
+              <p className="mt-2 text-lg text-muted-foreground">Happy Customers</p>
+            </div>
+          </FadeIn>
         </div>
       </div>
     </section>
