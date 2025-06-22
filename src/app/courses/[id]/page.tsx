@@ -3,10 +3,38 @@ import { notFound } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CourseDetailClient from './CourseDetailClient';
+import type { Metadata, ResolvingMetadata } from 'next';
+import type { Course } from '@/lib/types';
 
 type Props = {
   params: { id: string };
 };
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const course = await getCourseById(params.id);
+
+  if (!course) {
+    return {
+      title: 'Course Not Found',
+    };
+  }
+
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: `${course.title.en} | SMDS`,
+    description: course.shortDescription.en,
+    openGraph: {
+      title: course.title.en,
+      description: course.shortDescription.en,
+      images: [course.thumbnail, ...previousImages],
+    },
+  };
+}
+
 
 export default async function CourseDetailPage({ params }: Props) {
   const course = await getCourseById(params.id);

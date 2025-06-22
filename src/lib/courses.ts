@@ -1,11 +1,8 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Course } from './types';
 
-// Use a global variable to simulate a persistent in-memory database.
-// This helps prevent the data from being reset during hot-reloads in development.
 const globalForCourses = global as unknown as { courses: Course[] };
 
-// Initialize with some default data if it's not already there.
 if (!globalForCourses.courses) {
   globalForCourses.courses = [
     {
@@ -47,44 +44,36 @@ const courses = globalForCourses.courses;
 
 export async function getCourses(): Promise<Course[]> {
   noStore();
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
   return courses;
 }
 
 export async function getCourseById(id: string): Promise<Course | undefined> {
   noStore();
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
   return courses.find(course => course.id === id);
 }
 
-// Mock functions for admin panel
 export async function createCourse(data: Omit<Course, 'id'>): Promise<Course> {
-  await new Promise(resolve => setTimeout(resolve, 500));
+  noStore();
   const newCourse: Course = { ...data, id: Date.now().toString() };
   courses.push(newCourse);
-  console.log('Created course:', newCourse);
   return newCourse;
 }
 
 export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>): Promise<Course | undefined> {
-  await new Promise(resolve => setTimeout(resolve, 500));
+  noStore();
   const courseIndex = courses.findIndex(c => c.id === id);
   if (courseIndex > -1) {
     courses[courseIndex] = { ...courses[courseIndex], ...data };
-    console.log('Updated course:', courses[courseIndex]);
     return courses[courseIndex];
   }
   return undefined;
 }
 
 export async function deleteCourse(id: string): Promise<{ success: boolean }> {
-  await new Promise(resolve => setTimeout(resolve, 500));
+  noStore();
   const courseIndex = courses.findIndex(c => c.id === id);
   if (courseIndex > -1) {
     courses.splice(courseIndex, 1);
-    console.log('Deleted course with id:', id);
     return { success: true };
   }
   return { success: false };

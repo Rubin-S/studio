@@ -2,8 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Car, Users, BarChart, PlusCircle } from "lucide-react";
 import Link from 'next/link';
+import { getCourses } from "@/lib/courses";
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  const courses = await getCourses();
+
   return (
     <div className="space-y-8">
       <div>
@@ -18,8 +21,8 @@ export default function AdminDashboard() {
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">Currently active course</p>
+            <div className="text-2xl font-bold">{courses.length}</div>
+            <p className="text-xs text-muted-foreground">Currently active {courses.length === 1 ? 'course' : 'courses'}</p>
           </CardContent>
         </Card>
         <Card>
