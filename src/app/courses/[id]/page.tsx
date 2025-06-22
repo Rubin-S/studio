@@ -25,10 +25,10 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: `${course.title.en} | SMDS`,
+    title: course.title.en,
     description: course.shortDescription.en,
     openGraph: {
-      title: course.title.en,
+      title: `${course.title.en} | SMDS`,
       description: course.shortDescription.en,
       images: [course.thumbnail, ...previousImages],
     },

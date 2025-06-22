@@ -27,8 +27,32 @@ const fontCode = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: 'SMDS - Sri Senthil Murugan Driving School',
-  description: 'The best driving school in Thiyagadurgam. Learn to drive with experts.',
+  title: {
+    template: '%s | SMDS - Sri Senthil Murugan Driving School',
+    default: 'SMDS - Sri Senthil Murugan Driving School',
+  },
+  description: 'The premier driving school in Thiyagadurgam, Kallakurichi. We offer comprehensive car training and license assistance with expert instructors. Your journey to safe and confident driving starts here.',
+  keywords: ['driving school', 'Thiyagadurgam', 'Kallakurichi', 'learn to drive', 'car training', 'driving lessons', 'RTO license'],
+  openGraph: {
+    title: 'SMDS - Sri Senthil Murugan Driving School',
+    description: 'The premier driving school in Thiyagadurgam, Kallakurichi.',
+    siteName: 'Sri Senthil Murugan Driving School',
+    images: [
+      {
+        url: 'https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740',
+        width: 740,
+        height: 493,
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SMDS - Sri Senthil Murugan Driving School',
+    description: 'The premier driving school in Thiyagadurgam, Kallakurichi.',
+    images: ['https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740'],
+  },
 };
 
 export default function RootLayout({

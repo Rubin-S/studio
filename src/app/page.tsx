@@ -7,6 +7,12 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnimatedStats from '@/components/AnimatedStats';
 import { FadeIn } from '@/components/ui/fade-in';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'Welcome to Sri Senthil Murugan Driving School, the most trusted driving school in Thiyagadurgam. We offer expert car training and full license assistance to help you become a confident driver.',
+};
 
 export default function Home() {
   return (
@@ -50,7 +56,7 @@ export default function Home() {
               <FadeIn direction="right">
                 <div className="relative h-80 w-full rounded-lg shadow-xl md:h-96">
                   <Image
-                    src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg"
+                    src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740"
                     alt="Sri Senthil Murugan Driving School"
                     layout="fill"
                     objectFit="cover"

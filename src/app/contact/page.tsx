@@ -6,8 +6,12 @@ import { FadeIn } from '@/components/ui/fade-in';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact Us | SMDS',
+  title: 'Contact Us',
   description: 'Get in touch with Sri Senthil Murugan Driving School. Find our address, phone number, and a map to our location in Thiyagadurgam.',
+  openGraph: {
+      title: 'Contact Us | SMDS',
+      description: 'Find our contact details and location to start your driving lessons.',
+  },
 };
 
 

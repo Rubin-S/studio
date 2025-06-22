@@ -7,8 +7,15 @@ import { FadeIn } from '@/components/ui/fade-in';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About Us | SMDS',
+  title: 'About Us',
   description: 'Learn about the history, values, and the dedicated team at Sri Senthil Murugan Driving School, Thiyagadurgam\'s most trusted driving school.',
+  openGraph: {
+      title: 'About Us | SMDS',
+      description: 'Meet the team behind Thiyagadurgam\'s premier driving school.',
+      images: [
+          'https://firebasestorage.googleapis.com/v0/b/smds-2025-bbf18.firebasestorage.app/o/Images%2FIMG_20210801_153526.jpg?alt=media&token=8e327681-6bf0-441d-9af5-196373332472',
+      ],
+  }
 };
 
 const values = [

@@ -5,8 +5,12 @@ import CourseCard from './CourseCard';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Our Driving Courses | SMDS',
+  title: 'Our Driving Courses',
   description: 'Choose from a variety of driving courses to suit your needs. From beginner lessons to advanced training, start your journey to becoming a confident driver.',
+  openGraph: {
+      title: 'Our Driving Courses | SMDS',
+      description: 'Explore the driving courses we offer at Sri Senthil Murugan Driving School.',
+  },
 };
 
 export default async function CoursesPage() {
