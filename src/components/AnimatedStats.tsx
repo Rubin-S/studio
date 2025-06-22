@@ -46,7 +46,7 @@ export default function AnimatedStats() {
                  <CalendarDays className="h-10 w-10" />
               </div>
               <div className="mt-4 font-headline text-5xl font-bold text-primary">
-                Almost {inView ? <AnimatedCounter endValue={25} /> : '0'}+
+                {inView ? <AnimatedCounter endValue={15} /> : '0'}+
               </div>
               <p className="mt-2 text-lg text-muted-foreground">Years of Experience</p>
             </div>
@@ -57,7 +57,7 @@ export default function AnimatedStats() {
                  <Users className="h-10 w-10" />
               </div>
               <div className="mt-4 font-headline text-5xl font-bold text-primary">
-                {inView ? <AnimatedCounter endValue={25} /> : '0'}k+
+                {inView ? <AnimatedCounter endValue={5} /> : '0'}k+
               </div>
               <p className="mt-2 text-lg text-muted-foreground">Happy Customers</p>
             </div>
