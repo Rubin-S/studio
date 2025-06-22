@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from 'next/cache';
 import type { Course } from './types';
 
 const courses: Course[] = [
@@ -35,12 +36,14 @@ const courses: Course[] = [
 ];
 
 export async function getCourses(): Promise<Course[]> {
+  noStore();
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
   return courses;
 }
 
 export async function getCourseById(id: string): Promise<Course | undefined> {
+  noStore();
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
   return courses.find(course => course.id === id);
@@ -49,7 +52,7 @@ export async function getCourseById(id: string): Promise<Course | undefined> {
 // Mock functions for admin panel
 export async function createCourse(data: Omit<Course, 'id'>): Promise<Course> {
   await new Promise(resolve => setTimeout(resolve, 500));
-  const newCourse: Course = { ...data, id: (courses.length + 1).toString() };
+  const newCourse: Course = { ...data, id: Date.now().toString() };
   courses.push(newCourse);
   console.log('Created course:', newCourse);
   return newCourse;
