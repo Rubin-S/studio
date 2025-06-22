@@ -24,8 +24,7 @@ const values = [
 ];
 
 const team = [
-    { name: "Senthil Kumar", role: "Founder & Chief Instructor", image: "https://placehold.co/400x400.png", hint: "male instructor portrait" },
-    { name: "Prakash M.", role: "Senior Instructor", image: "https://placehold.co/400x400.png", hint: "driving instructor smiling" }
+    { name: "Senthil Murugan", role: "Founder & Chief Instructor", image: "https://placehold.co/400x400.png", hint: "male instructor portrait" }
 ]
 
 export default function AboutPage() {
@@ -47,7 +46,7 @@ export default function AboutPage() {
                 <div className="grid gap-12 md:grid-cols-2 md:items-center">
                     <FadeIn direction='left'>
                         <div className="relative h-80 w-full rounded-lg shadow-xl md:h-96">
-                            <Image src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg" alt="Sri Senthil Murugan Driving School" layout="fill" objectFit="cover" className="rounded-lg" data-ai-hint="driving school illustration"/>
+                            <Image src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740" alt="Sri Senthil Murugan Driving School" layout="fill" objectFit="cover" className="rounded-lg" data-ai-hint="driving school illustration"/>
                         </div>
                     </FadeIn>
                     <FadeIn direction='right'>
@@ -93,25 +92,27 @@ export default function AboutPage() {
         <section className="py-16 md:py-24">
             <div className="container mx-auto px-4 text-center">
                 <FadeIn>
-                    <h2 className="font-headline text-3xl font-bold">Meet Our Instructors</h2>
+                    <h2 className="font-headline text-3xl font-bold">Meet Our Instructor</h2>
                     <p className="mt-2 max-w-2xl mx-auto text-muted-foreground">
-                        The experienced professionals dedicated to your success.
+                        The experienced professional dedicated to your success.
                     </p>
                 </FadeIn>
-                <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:w-2/3 mx-auto">
-                    {team.map((member, index) => (
-                         <FadeIn key={member.name} delay={`delay-${(index + 1) * 150}`}>
-                            <Card className="overflow-hidden text-center shadow-lg">
-                                <div className="relative h-64 w-full">
-                                   <Image src={member.image} alt={member.name} layout="fill" objectFit="cover" data-ai-hint={member.hint}/>
-                                </div>
-                                <CardContent className="p-6">
-                                    <h3 className="font-headline text-xl font-bold">{member.name}</h3>
-                                    <p className="text-primary">{member.role}</p>
-                                </CardContent>
-                            </Card>
-                        </FadeIn>
-                    ))}
+                <div className="mt-12 flex justify-center">
+                    <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
+                        {team.map((member, index) => (
+                             <FadeIn key={member.name} delay={`delay-${(index + 1) * 150}`}>
+                                <Card className="overflow-hidden text-center shadow-lg">
+                                    <div className="relative h-64 w-full">
+                                       <Image src={member.image} alt={member.name} layout="fill" objectFit="cover" data-ai-hint={member.hint}/>
+                                    </div>
+                                    <CardContent className="p-6">
+                                        <h3 className="font-headline text-xl font-bold">{member.name}</h3>
+                                        <p className="text-primary">{member.role}</p>
+                                    </CardContent>
+                                </Card>
+                            </FadeIn>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
