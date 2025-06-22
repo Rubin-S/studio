@@ -43,6 +43,7 @@ const formSchema = z.object({
     ta: z.string().min(1, 'Tamil instructions are required'),
   }),
   youtubeLink: z.string().url().optional().or(z.literal('')),
+  documentUrl: z.string().url().optional().or(z.literal('')),
   googleCalendarLink: z.string().url().optional().or(z.literal('')),
   googleFormLink: z.string().url().optional().or(z.literal('')),
 });
@@ -69,6 +70,7 @@ export function CourseForm({ course }: CourseFormProps) {
         price: { original: 0, discounted: 0 },
         instructions: { en: '', ta: '' },
         youtubeLink: '',
+        documentUrl: '',
         googleCalendarLink: '',
         googleFormLink: '',
     },
@@ -137,6 +139,7 @@ export function CourseForm({ course }: CourseFormProps) {
              <FormField name="price.discounted" render={({ field }) => <FormItem><FormLabel>Discounted Price</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>} />
              <FormField name="thumbnail" render={({ field }) => <FormItem className="md:col-span-2"><FormLabel>Thumbnail URL</FormLabel><FormControl><Input {...field} /></FormControl><FormDescription>URL for the course image.</FormDescription><FormMessage /></FormItem>} />
              <FormField name="youtubeLink" render={({ field }) => <FormItem><FormLabel>YouTube Embed Link</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+             <FormField name="documentUrl" render={({ field }) => <FormItem><FormLabel>Document URL (PDF/DOCX)</FormLabel><FormControl><Input {...field} /></FormControl><FormDescription>Link to course materials (e.g., syllabus).</FormDescription><FormMessage /></FormItem>} />
              <FormField name="googleCalendarLink" render={({ field }) => <FormItem><FormLabel>Google Calendar Embed Link</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
              <FormField name="googleFormLink" render={({ field }) => <FormItem><FormLabel>Google Form Embed Link</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
           </CardContent>

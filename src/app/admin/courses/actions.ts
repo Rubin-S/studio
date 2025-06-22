@@ -31,6 +31,7 @@ const formSchema = z.object({
     ta: z.string().min(1, 'Tamil instructions are required'),
   }),
   youtubeLink: z.string().url().optional().or(z.literal('')),
+  documentUrl: z.string().url().optional().or(z.literal('')),
   googleCalendarLink: z.string().url().optional().or(z.literal('')),
   googleFormLink: z.string().url().optional().or(z.literal('')),
 });

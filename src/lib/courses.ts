@@ -36,6 +36,7 @@ if (!globalForCourses.courses) {
         ta: 'பதிவுக்காக சரியான அடையாளச் சான்று மற்றும் இரண்டு பாஸ்போர்ட் அளவு புகைப்படங்களைக் கொண்டு வரவும். அனைத்து கற்றல் பொருட்களும் வழங்கப்படும்.'
       },
       youtubeLink: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      documentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       googleCalendarLink: 'https://calendar.google.com/calendar/embed?src=en.indian%23holiday%40group.v.calendar.google.com&ctz=Asia%2FKolkata',
       googleFormLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdw7QzaP2hG4F7w2Yd_cR7D0iA_bKvJ8aP9xW8eL9T0uR3c_A/viewform?embedded=true',
     }

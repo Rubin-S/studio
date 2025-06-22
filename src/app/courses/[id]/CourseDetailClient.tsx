@@ -3,8 +3,9 @@
 import { useLanguage } from '@/hooks/useLanguage';
 import type { Course } from '@/lib/types';
 import Image from 'next/image';
-import { CheckCircle, BookUser, Calendar, Youtube, Info } from 'lucide-react';
+import { CheckCircle, BookUser, Calendar, Youtube, Info, FileText, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 type CourseDetailClientProps = {
   course: Course;
@@ -99,6 +100,25 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
                   <p className="text-sm text-muted-foreground">{t(course.instructions)}</p>
               </CardContent>
             </Card>
+            
+          {course.documentUrl && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline text-2xl text-primary">
+                  <FileText /> {t({ en: 'Course Materials', ta: 'பாடப் பொருட்கள்' })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4 text-sm text-muted-foreground">{t({ en: 'Download course syllabus, guides, and other materials.', ta: 'பாடத்திட்டம், வழிகாட்டிகள் மற்றும் பிற பொருட்களைப் பதிவிறக்கவும்.' })}</p>
+                <Button asChild className="w-full">
+                  <a href={course.documentUrl} target="_blank" rel="noopener noreferrer">
+                    <Download className="mr-2 h-4 w-4" />
+                    {t({ en: 'Download Materials', ta: 'பொருட்களைப் பதிவிறக்கவும்' })}
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
       
