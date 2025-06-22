@@ -34,10 +34,10 @@ export async function getCourses(): Promise<Course[]> {
           en: 'Please bring your Learners License (LLR) and a passport-sized photograph on the first day of class.',
           ta: 'வகுப்பின் முதல் நாளில் உங்கள் ஓட்டுநர் உரிமம் (LLR) மற்றும் பாஸ்போர்ட் அளவு புகைப்படத்தை கொண்டு வரவும்.',
         },
-        youtubeLink: 'https://www.youtube.com/embed/watch?v=dQw4w9WgXcQ',
-        documentUrl: 'https://storage.googleapis.com/res_studio/smds-herosec/original.png',
-        googleCalendarLink: 'https://calendar.google.com/calendar/embed?src=c_a3d0b2e8f1c7e6d0a7a5b4c3d2e1f0a9b8c7d6e5f4a3b2e1c0d9a8b7c6e5f4d3%40group.calendar.google.com&ctz=UTC',
-        googleFormLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdw7QzaP2hG4F7w2Yd_cR7D0iA_bKvJ8aP9xW8eL9T0uR3c_A/viewform?embedded=true',
+        youtubeLink: '',
+        documentUrl: '',
+        googleCalendarLink: '',
+        googleFormLink: '',
       };
       const docRef = await addDoc(coursesCollection, seedData);
       // Return the newly created course in the correct format immediately
