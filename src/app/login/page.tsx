@@ -76,7 +76,6 @@ export default function LoginPage() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="admin@smds.com"
                 required
                 disabled={isSubmitting}
               />
@@ -87,7 +86,6 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="password"
                 required
                 disabled={isSubmitting}
               />
