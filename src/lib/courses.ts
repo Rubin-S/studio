@@ -3,23 +3,33 @@ import { unstable_noStore as noStore } from 'next/cache';
 import type { Course } from './types';
 import { db } from './firebase';
 
+const handleDbError = (context: string) => {
+  console.warn(`[DB] ${context}: Firestore is not initialized. This is expected if Firebase environment variables are not set.`);
+};
+
 export async function getCourses(): Promise<Course[]> {
-  noStore(); // Opt out of caching
+  noStore();
+  if (!db) {
+    handleDbError("Fetching courses");
+    return [];
+  }
   try {
     const coursesCollection = collection(db, 'courses');
     const querySnapshot = await getDocs(coursesCollection);
     const courses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
     return courses;
   } catch (error) {
-    console.error("[DB] Error fetching courses. This might be due to Firestore security rules or missing env vars. Please check your configuration.", error);
-    // Return an empty array on error so the app doesn't crash.
-    // The user will see an empty list, and the console error will guide them.
+    console.error("[DB] Error fetching courses. This might be due to Firestore security rules.", error);
     return [];
   }
 }
 
 export async function getCourseById(id: string): Promise<Course | undefined> {
-  noStore(); // Opt out of caching
+  noStore();
+  if (!db) {
+    handleDbError(`Fetching course with ID ${id}`);
+    return undefined;
+  }
   try {
     const docRef = doc(db, 'courses', id);
     const docSnap = await getDoc(docRef);
@@ -29,23 +39,31 @@ export async function getCourseById(id: string): Promise<Course | undefined> {
     }
     return undefined;
   } catch (error) {
-    console.error(`[DB] Error fetching course with ID ${id}. This might be due to Firestore security rules. Please ensure your rules allow read access.`, error);
+    console.error(`[DB] Error fetching course with ID ${id}. This might be due to Firestore security rules.`, error);
     return undefined;
   }
 }
 
 export async function createCourse(data: Omit<Course, 'id'>): Promise<Course> {
+  if (!db) {
+    handleDbError("Creating course");
+    throw new Error("Database not initialized.");
+  }
   try {
     const coursesCollection = collection(db, 'courses');
     const docRef = await addDoc(coursesCollection, data);
     return { id: docRef.id, ...data };
   } catch (error) {
     console.error("[DB] Error creating course. This might be due to Firestore security rules. Please ensure your rules allow write access.", error);
-    throw error; // Re-throw the error to be handled by the server action
+    throw error;
   }
 }
 
 export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>): Promise<Course | undefined> {
+  if (!db) {
+    handleDbError(`Updating course with ID ${id}`);
+    throw new Error("Database not initialized.");
+  }
   try {
     const docRef = doc(db, 'courses', id);
     if (Object.keys(data).length > 0) {
@@ -63,6 +81,10 @@ export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>
 }
 
 export async function deleteCourse(id: string): Promise<{ success: boolean }> {
+  if (!db) {
+    handleDbError(`Deleting course with ID ${id}`);
+    throw new Error("Database not initialized.");
+  }
   try {
     const docRef = doc(db, 'courses', id);
     await deleteDoc(docRef);
