@@ -27,9 +27,9 @@ export default function Footer() {
           <div>
             <h3 className="font-headline font-semibold">Contact Us</h3>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li className="max-w-xs">123 Main Road, Thiyagadurgam, Kallakurichi, Tamil Nadu 606206</li>
-              <li>+91 98765 43210</li>
-              <li>contact@smds.com</li>
+              <li className="max-w-xs">17, Udhayamampattu Road, Thiyagadurgam.Kallakurichi,Tamil Nadu- 606 206.</li>
+              <li>+91 9443091530</li>
+              <li>rubinsenthil@gmail.com</li>
             </ul>
           </div>
           <div>

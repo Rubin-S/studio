@@ -50,7 +50,7 @@ export default function Home() {
               <FadeIn direction="right">
                 <div className="relative h-80 w-full rounded-lg shadow-xl md:h-96">
                   <Image
-                    src="https://storage.googleapis.com/res_studio/smds-herosec/original.png"
+                    src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg"
                     alt="Sri Senthil Murugan Driving School"
                     layout="fill"
                     objectFit="cover"
