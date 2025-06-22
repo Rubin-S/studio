@@ -1,4 +1,5 @@
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { unstable_noStore as noStore } from 'next/cache';
 import type { Course } from './types';
 import { db } from './firebase';
 
@@ -38,6 +39,7 @@ const initialCourse: Omit<Course, 'id'> = {
 };
 
 export async function getCourses(): Promise<Course[]> {
+  noStore(); // Opt out of caching
   const querySnapshot = await getDocs(coursesCollection);
   
   if (querySnapshot.empty) {
@@ -51,6 +53,7 @@ export async function getCourses(): Promise<Course[]> {
 }
 
 export async function getCourseById(id: string): Promise<Course | undefined> {
+  noStore(); // Opt out of caching
   const docRef = doc(db, 'courses', id);
   const docSnap = await getDoc(docRef);
 
