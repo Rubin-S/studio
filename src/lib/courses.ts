@@ -14,7 +14,7 @@ export async function getCourses(): Promise<Course[]> {
     // If the collection is empty, seed it with one course for demonstration
     if (querySnapshot.empty) {
       console.log('[DB] Courses collection is empty. Seeding initial data...');
-      await addDoc(coursesCollection, {
+      const seedData = {
         title: { en: 'Comprehensive Car Training', ta: 'விரிவான கார் பயிற்சி' },
         thumbnail: 'https://placehold.co/600x400.png',
         shortDescription: {
@@ -40,12 +40,11 @@ export async function getCourses(): Promise<Course[]> {
         documentUrl: 'https://storage.googleapis.com/res_studio/smds-herosec/original.png',
         googleCalendarLink: 'https://calendar.google.com/calendar/embed?src=c_a3d0b2e8f1c7e6d0a7a5b4c3d2e1f0a9b8c7d6e5f4a3b2e1c0d9a8b7c6e5f4d3%40group.calendar.google.com&ctz=UTC',
         googleFormLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdw7QzaP2hG4F7w2Yd_cR7D0iA_bKvJ8aP9xW8eL9T0uR3c_A/viewform?embedded=true',
-      });
-      console.log('[DB] Seeding complete. Refetching courses...');
-      const newSnapshot = await getDocs(coursesCollection);
-      const courses = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
-      console.log(`[DB] Successfully fetched ${courses.length} seeded courses.`);
-      return courses;
+      };
+      const docRef = await addDoc(coursesCollection, seedData);
+      console.log(`[DB] Seeding complete. New course ID: ${docRef.id}.`);
+      // Return the newly created course in the correct format immediately
+      return [{ ...seedData, id: docRef.id } as Course];
     }
 
 
@@ -54,7 +53,7 @@ export async function getCourses(): Promise<Course[]> {
     return courses;
   } catch (error) {
     console.error("[DB] Error fetching courses:", error);
-    console.error("[DB] This might be due to Firestore security rules. Please ensure your rules allow read access to the 'courses' collection.");
+    console.error("[DB] This might be due to Firestore security rules. Please ensure your rules allow read/write access to the 'courses' collection.");
     return [];
   }
 }
