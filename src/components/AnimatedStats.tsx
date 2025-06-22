@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Users, Award, CalendarDays } from 'lucide-react';
+import { FadeIn } from '@/components/ui/fade-in';
 
 const stats = [
   { icon: CalendarDays, value: 15, label: "Years of Experience" },
@@ -15,7 +16,7 @@ function AnimatedCounter({ endValue }: { endValue: number }) {
   
   useEffect(() => {
     let startTime: number;
-    const duration = 1500;
+    const duration = 2000;
     
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
@@ -32,7 +33,7 @@ function AnimatedCounter({ endValue }: { endValue: number }) {
     requestAnimationFrame(animate);
   }, [endValue]);
   
-  return <span className="font-headline text-5xl font-bold text-primary">{count}+</span>;
+  return <span className="font-headline text-5xl font-bold text-primary">{count.toLocaleString()}+</span>;
 }
 
 export default function AnimatedStats() {
@@ -42,19 +43,21 @@ export default function AnimatedStats() {
   });
 
   return (
-    <section id="stats" ref={ref} className="bg-background py-16 md:py-24">
+    <section id="stats" ref={ref} className="bg-secondary py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center">
-              <div className="rounded-full bg-primary/10 p-4 text-primary">
-                 <stat.icon className="h-10 w-10" />
+          {stats.map((stat, index) => (
+            <FadeIn key={stat.label} delay={`delay-${(index + 1) * 150}`}>
+              <div className="flex flex-col items-center">
+                <div className="rounded-full bg-primary/10 p-4 text-primary">
+                   <stat.icon className="h-10 w-10" />
+                </div>
+                <div className="mt-4">
+                  {inView ? <AnimatedCounter endValue={stat.value} /> : <span className="font-headline text-5xl font-bold text-primary">0+</span>}
+                </div>
+                <p className="mt-2 text-lg text-muted-foreground">{stat.label}</p>
               </div>
-              <div className="mt-4">
-                {inView ? <AnimatedCounter endValue={stat.value} /> : <span className="font-headline text-5xl font-bold text-primary">0+</span>}
-              </div>
-              <p className="mt-2 text-lg text-muted-foreground">{stat.label}</p>
-            </div>
+            </FadeIn>
           ))}
         </div>
       </div>

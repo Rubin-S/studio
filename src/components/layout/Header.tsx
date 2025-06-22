@@ -19,18 +19,18 @@ export default function Header() {
   const navLinks = [
     { href: '/', label: { en: 'Home', ta: 'முகப்பு' } },
     { href: '/courses', label: { en: 'Courses', ta: 'படிப்புகள்' } },
-    { href: '/contact', label: { en: 'Contact Us', ta: 'தொடர்புக்கு' } },
     { href: '/about', label: { en: 'About Us', ta: 'எங்களை பற்றி' } },
+    { href: '/contact', label: { en: 'Contact Us', ta: 'தொடர்புக்கு' } },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <header className="sticky top-0 z-50 bg-background shadow-sm">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
           <Car className="h-8 w-8 text-primary" />
           <span className="font-headline text-xl font-bold">SMDS</span>
         </Link>
-        <nav className="hidden items-center gap-4 md:flex">
+        <nav className="hidden items-center gap-6 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -55,15 +55,15 @@ export default function Header() {
         </div>
       </div>
       {isMenuOpen && (
-        <div className="md:hidden">
-          <nav className="flex flex-col items-center space-y-4 py-4">
+        <div className="absolute w-full border-b bg-background shadow-lg md:hidden">
+          <nav className="flex flex-col items-center space-y-4 px-4 py-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'text-lg font-medium transition-colors hover:text-primary',
-                  pathname === link.href ? 'text-primary' : 'text-muted-foreground'
+                  'w-full rounded-md py-2 text-center text-lg font-medium transition-colors hover:bg-muted hover:text-primary',
+                  pathname === link.href ? 'bg-muted text-primary' : 'text-muted-foreground'
                 )}
                 onClick={() => setIsMenuOpen(false)}
               >

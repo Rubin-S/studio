@@ -4,7 +4,7 @@ import { Car, Twitter, Facebook, Instagram } from 'lucide-react';
 export default function Footer() {
   return (
     <footer className="bg-secondary">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="flex flex-col items-start">
             <Link href="/" className="flex items-center gap-2">
@@ -18,10 +18,10 @@ export default function Footer() {
           <div>
             <h3 className="font-headline font-semibold">Quick Links</h3>
             <ul className="mt-4 space-y-2 text-sm">
-              <li><Link href="/" className="text-muted-foreground hover:text-primary">Home</Link></li>
-              <li><Link href="/courses" className="text-muted-foreground hover:text-primary">Courses</Link></li>
-              <li><Link href="/contact" className="text-muted-foreground hover:text-primary">Contact Us</Link></li>
-              <li><Link href="/about" className="text-muted-foreground hover:text-primary">About Us</Link></li>
+              <li><Link href="/" className="text-muted-foreground transition-colors hover:text-primary">Home</Link></li>
+              <li><Link href="/courses" className="text-muted-foreground transition-colors hover:text-primary">Courses</Link></li>
+              <li><Link href="/about" className="text-muted-foreground transition-colors hover:text-primary">About Us</Link></li>
+              <li><Link href="/contact" className="text-muted-foreground transition-colors hover:text-primary">Contact Us</Link></li>
             </ul>
           </div>
           <div>
@@ -35,9 +35,9 @@ export default function Footer() {
           <div>
             <h3 className="font-headline font-semibold">Follow Us</h3>
             <div className="mt-4 flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-primary"><Twitter /></a>
-              <a href="#" className="text-muted-foreground hover:text-primary"><Facebook /></a>
-              <a href="#" className="text-muted-foreground hover:text-primary"><Instagram /></a>
+              <a href="#" className="text-muted-foreground transition-colors hover:text-primary"><Twitter /></a>
+              <a href="#" className="text-muted-foreground transition-colors hover:text-primary"><Facebook /></a>
+              <a href="#" className="text-muted-foreground transition-colors hover:text-primary"><Instagram /></a>
             </div>
           </div>
         </div>
