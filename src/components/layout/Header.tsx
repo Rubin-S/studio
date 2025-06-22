@@ -28,7 +28,7 @@ export default function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
           <Car className="h-8 w-8 text-primary" />
-          <span className="font-headline text-xl font-bold">ThiyagaDrive</span>
+          <span className="font-headline text-xl font-bold">SMDS</span>
         </Link>
         <nav className="hidden items-center gap-4 md:flex">
           {navLinks.map((link) => (

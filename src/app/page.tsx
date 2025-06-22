@@ -23,10 +23,10 @@ export default function Home() {
           />
           <div className="container mx-auto flex h-full flex-col items-center justify-center px-4 text-center text-primary-foreground">
             <h1 className="font-headline text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-              Learn to Drive with Confidence
+              Sri Senthil Murugan Driving School
             </h1>
             <p className="mt-4 max-w-2xl text-lg md:text-xl">
-              Sri Senthil Murugan Driving School: Your trusted partner on the road to getting your license in Thiyagadurgam.
+              Your trusted partner on the road to getting your license in Thiyagadurgam.
             </p>
             <Button asChild size="lg" className="mt-8 bg-accent text-accent-foreground hover:bg-accent/90">
               <Link href="/courses">Book a Slot Now</Link>

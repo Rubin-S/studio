@@ -30,7 +30,7 @@ const courses: Course[] = [
     },
     youtubeLink: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     googleCalendarLink: 'https://calendar.google.com/calendar/embed?src=en.indian%23holiday%40group.v.calendar.google.com&ctz=Asia%2FKolkata',
-    googleFormLink: 'https://docs.google.com/forms/d/e/1FAIpQLScP_f8YkE4fG9v-A0jH2QzYx_Z/viewform?embedded=true',
+    googleFormLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdw7QzaP2hG4F7w2Yd_cR7D0iA_bKvJ8aP9xW8eL9T0uR3c_A/viewform?embedded=true',
   }
 ];
 

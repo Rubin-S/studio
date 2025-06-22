@@ -89,7 +89,6 @@ export function CourseForm({ course }: CourseFormProps) {
         toast({ title: 'Success', description: 'Course created successfully.' });
       }
       router.push('/admin/courses');
-      router.refresh();
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Something went wrong.' });
     }

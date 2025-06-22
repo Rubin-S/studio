@@ -38,6 +38,7 @@ const formSchema = z.object({
 export async function createCourseAction(data: z.infer<typeof formSchema>) {
   const validatedData = formSchema.parse(data);
   await createCourse(validatedData);
+  revalidatePath('/');
   revalidatePath('/admin/courses');
   revalidatePath('/courses');
 }
@@ -45,6 +46,7 @@ export async function createCourseAction(data: z.infer<typeof formSchema>) {
 export async function updateCourseAction(id: string, data: z.infer<typeof formSchema>) {
   const validatedData = formSchema.parse(data);
   await updateCourse(id, validatedData);
+  revalidatePath('/');
   revalidatePath('/admin/courses');
   revalidatePath(`/courses/${id}`);
   revalidatePath('/courses');
@@ -53,6 +55,7 @@ export async function updateCourseAction(id: string, data: z.infer<typeof formSc
 export async function deleteCourseAction(id: string) {
   if (!id) throw new Error("ID is required");
   await deleteCourse(id);
+  revalidatePath('/');
   revalidatePath('/admin/courses');
   revalidatePath('/courses');
 }

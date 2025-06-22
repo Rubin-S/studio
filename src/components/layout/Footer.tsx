@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="flex flex-col items-start">
             <Link href="/" className="flex items-center gap-2">
               <Car className="h-8 w-8 text-primary" />
-              <span className="font-headline text-xl font-bold">ThiyagaDrive</span>
+              <span className="font-headline text-xl font-bold">SMDS</span>
             </Link>
             <p className="mt-2 text-sm text-muted-foreground">
               Your expert guide to safe driving in Thiyagadurgam.
@@ -29,7 +29,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               <li className="max-w-xs">123 Main Road, Thiyagadurgam, Kallakurichi, Tamil Nadu 606206</li>
               <li>+91 98765 43210</li>
-              <li>contact@thiyagadrive.com</li>
+              <li>contact@smds.com</li>
             </ul>
           </div>
           <div>

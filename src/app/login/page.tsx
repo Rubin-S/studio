@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,16 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // This effect runs on the client after the component mounts
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      router.replace('/admin');
+    } else {
+      setIsLoading(false);
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +32,8 @@ export default function LoginPage() {
     // Mock authentication
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (email === 'admin@thiyagadrive.com' && password === 'password') {
+    if (email === 'admin@smds.com' && password === 'password') {
+      localStorage.setItem('isLoggedIn', 'true');
       toast({
         title: "Login Successful",
         description: "Redirecting to admin dashboard...",
@@ -38,6 +48,16 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary">
+        {/* You can replace this with a proper loading spinner component */}
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary">
@@ -56,7 +76,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@thiyagadrive.com"
+                placeholder="admin@smds.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

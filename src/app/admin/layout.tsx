@@ -1,19 +1,37 @@
 'use client'
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Car, LogOut, UserCircle } from 'lucide-react';
 import { Sidebar, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useEffect, useState } from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+      setIsClient(true);
+      if (localStorage.getItem('isLoggedIn') !== 'true') {
+        router.replace('/login');
+      }
+    }, [router]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('isLoggedIn');
+        router.push('/login');
+    };
 
     const navItems = [
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/admin/courses', label: 'Courses', icon: Car },
     ];
+
+    if (!isClient) {
+        return null; // or a loading spinner
+    }
 
     return (
         <SidebarProvider>
@@ -45,11 +63,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </SidebarMenu>
                     </SidebarContent>
                     <SidebarFooter>
-                        <Button asChild variant="ghost" className="w-full justify-start gap-2">
-                             <Link href="/">
-                                <LogOut className="h-5 w-5" />
-                                <span>Logout</span>
-                            </Link>
+                        <Button onClick={handleLogout} variant="ghost" className="w-full justify-start gap-2">
+                            <LogOut className="h-5 w-5" />
+                            <span>Logout</span>
                         </Button>
                     </SidebarFooter>
                 </div>

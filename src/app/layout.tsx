@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 
 export const metadata: Metadata = {
-  title: 'ThiyagaDrive - Sri Senthil Murugan Driving School',
+  title: 'SMDS - Sri Senthil Murugan Driving School',
   description: 'The best driving school in Thiyagadurgam. Learn to drive with experts.',
 };
 

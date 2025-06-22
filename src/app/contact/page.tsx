@@ -46,7 +46,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Email Address</h3>
-                    <a href="mailto:contact@thiyagadrive.com" className="text-muted-foreground hover:text-primary">contact@thiyagadrive.com</a>
+                    <a href="mailto:contact@smds.com" className="text-muted-foreground hover:text-primary">contact@smds.com</a>
                   </div>
                 </div>
               </CardContent>
