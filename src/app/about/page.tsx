@@ -24,7 +24,7 @@ const values = [
 ];
 
 const team = [
-    { name: "Senthil Murugan", role: "Founder & Chief Instructor", image: "https://placehold.co/400x400.png", hint: "male instructor portrait" }
+    { name: "Senthil Murugan", role: "Founder & Chief Instructor", image: "https://img.freepik.com/free-photo/portrait-male-driving-instructor_23-2148202359.jpg?w=740", hint: "male instructor portrait" }
 ]
 
 export default function AboutPage() {
