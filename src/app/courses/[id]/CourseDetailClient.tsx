@@ -14,7 +14,7 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
   const { t } = useLanguage();
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
+    <>
       <div className="relative mb-8 h-64 w-full overflow-hidden rounded-lg shadow-lg md:h-96">
         <Image
           src={course.thumbnail}
@@ -124,7 +124,7 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
                   <Card>
                       <CardHeader>
                           <CardTitle className="flex items-center gap-2 font-headline text-xl text-primary"><BookUser /> {t({ en: 'Step 2: Register Your Details', ta: 'படி 2: உங்கள் விவரங்களைப் பதிவு செய்யவும்' })}</CardTitle>
-                      </Header>
+                      </CardHeader>
                       <CardContent>
                           <div className="aspect-square w-full overflow-hidden rounded-lg">
                               <iframe src={course.googleFormLink} width="100%" height="100%" frameBorder="0" marginHeight={0} marginWidth={0} title="Registration Form">Loading…</iframe>
@@ -134,6 +134,6 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
               )}
           </div>
       </div>
-    </div>
+    </>
   );
 }
