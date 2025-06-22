@@ -75,7 +75,7 @@ export default function ContactPage() {
                 <CardContent>
                   <div className="aspect-video w-full overflow-hidden rounded-lg">
                      <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3902.990422981966!2d79.09559191526369!3d11.693892591784999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbaf07555555555%3A0x6e2f755555555555!2sThiyagadurgam!5e0!3m2!1sen!2sin!4v1622558888888!5m2!1sen!2sin"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3906.3391689393407!2d79.07243307452924!3d11.74113914066032!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bab5d978baee279%3A0x2210b290e7ef14f4!2sSRI%20SENTHILMURUGAN%20Driving%20School!5e0!3m2!1sen!2sin!4v1750627539689!5m2!1sen!2sin"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
