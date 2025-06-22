@@ -47,9 +47,6 @@ export default function Header() {
         <div className="hidden items-center gap-2 md:flex">
           <LanguageSwitcher />
           <ThemeSwitcher />
-           <Button asChild>
-            <Link href="/login">Admin Login</Link>
-          </Button>
         </div>
         <div className="md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -73,13 +70,10 @@ export default function Header() {
                 {t(link.label)}
               </Link>
             ))}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 pt-4">
               <LanguageSwitcher />
               <ThemeSwitcher />
             </div>
-             <Button asChild className="mt-2" onClick={() => setIsMenuOpen(false)}>
-              <Link href="/login">Admin Login</Link>
-            </Button>
           </nav>
         </div>
       )}

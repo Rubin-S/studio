@@ -6,15 +6,20 @@ import { LayoutDashboard, Car, LogOut, UserCircle } from 'lucide-react';
 import { Sidebar, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
     const router = useRouter();
-    const [isClient, setIsClient] = useState(false);
+    const pathname = usePathname();
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
     useEffect(() => {
-      setIsClient(true);
-      if (localStorage.getItem('isLoggedIn') !== 'true') {
+      // This check only runs on the client-side
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (loggedIn) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
         router.replace('/login');
       }
     }, [router]);
@@ -29,8 +34,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/courses', label: 'Courses', icon: Car },
     ];
 
-    if (!isClient) {
-        return null; // or a loading spinner
+    // While checking authentication, show a loading skeleton to prevent content flash
+    if (isAuthenticated === null) {
+        return (
+            <div className="flex h-screen w-full">
+                {/* Sidebar Skeleton */}
+                <div className="hidden w-64 flex-col border-r bg-card p-4 md:flex">
+                    <div className="flex items-center gap-2 p-2">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-3 w-28" />
+                        </div>
+                    </div>
+                    <div className="mt-8 flex flex-col gap-2">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="mt-auto">
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                </div>
+                {/* Main Content Skeleton */}
+                <div className="flex-1 space-y-8 p-8">
+                    <div>
+                        <Skeleton className="h-8 w-64" />
+                        <Skeleton className="mt-2 h-4 w-96" />
+                    </div>
+                    <Skeleton className="h-48 w-full rounded-lg" />
+                    <Skeleton className="h-64 w-full rounded-lg" />
+                </div>
+            </div>
+        );
+    }
+    
+    // If not authenticated, the redirect is already in progress, so we return null
+    if (!isAuthenticated) {
+        return null;
     }
 
     return (
