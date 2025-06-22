@@ -2,6 +2,12 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { getCourses } from '@/lib/courses';
 import CourseCard from './CourseCard';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Our Driving Courses | SMDS',
+  description: 'Choose from a variety of driving courses to suit your needs. From beginner lessons to advanced training, start your journey to becoming a confident driver.',
+};
 
 export default async function CoursesPage() {
   const courses = await getCourses();

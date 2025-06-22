@@ -1,9 +1,15 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldCheck, Users, Trophy, Eye, Rocket, Heart } from 'lucide-react';
+import { ShieldCheck, Users, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import { FadeIn } from '@/components/ui/fade-in';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Us | SMDS',
+  description: 'Learn about the history, values, and the dedicated team at Sri Senthil Murugan Driving School, Thiyagadurgam\'s most trusted driving school.',
+};
 
 const values = [
   {

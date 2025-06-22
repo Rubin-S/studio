@@ -8,13 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Car, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { loginAction } from './actions';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // This effect runs on the client after the component mounts
@@ -25,14 +25,14 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Mock authentication
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSubmitting(true);
     
-    if (email === 'admin@smds.com' && password === 'password') {
+    const formData = new FormData(e.currentTarget);
+    const result = await loginAction(formData);
+
+    if (result.success) {
       localStorage.setItem('isLoggedIn', 'true');
       toast({
         title: "Login Successful",
@@ -43,16 +43,15 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: result.error || "An unknown error occurred.",
       });
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary">
-        {/* You can replace this with a proper loading spinner component */}
         <p>Loading...</p>
       </div>
     );
@@ -75,30 +74,28 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="admin@smds.com"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               />
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : (
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Logging in...' : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
                   Login

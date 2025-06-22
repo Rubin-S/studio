@@ -3,6 +3,13 @@ import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { FadeIn } from '@/components/ui/fade-in';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact Us | SMDS',
+  description: 'Get in touch with Sri Senthil Murugan Driving School. Find our address, phone number, and a map to our location in Thiyagadurgam.',
+};
+
 
 export default function ContactPage() {
   return (
@@ -32,7 +39,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold">Our Address</h3>
-                      <p className="text-muted-foreground">123 Main Road, Thiyagadurgam, Kallakurichi, Tamil Nadu 606206</p>
+                      <p className="text-muted-foreground">17, Udhayamampattu Road, Thiyagadurgam.Kallakurichi,Tamil Nadu- 606 206.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -41,7 +48,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold">Phone Number</h3>
-                      <a href="tel:+919876543210" className="text-muted-foreground transition-colors hover:text-primary">+91 98765 43210</a>
+                      <a href="tel:+919443091530" className="text-muted-foreground transition-colors hover:text-primary">+91 9443091530</a>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -50,7 +57,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold">Email Address</h3>
-                      <a href="mailto:contact@smds.com" className="text-muted-foreground transition-colors hover:text-primary">contact@smds.com</a>
+                      <a href="mailto:rubinsenthil@gmail.com" className="text-muted-foreground transition-colors hover:text-primary">rubinsenthil@gmail.com</a>
                     </div>
                   </div>
                 </CardContent>
