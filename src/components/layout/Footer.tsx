@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SteeringWheel, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Car, Twitter, Facebook, Instagram } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="flex flex-col items-start">
             <Link href="/" className="flex items-center gap-2">
-              <SteeringWheel className="h-8 w-8 text-primary" />
+              <Car className="h-8 w-8 text-primary" />
               <span className="font-headline text-xl font-bold">ThiyagaDrive</span>
             </Link>
             <p className="mt-2 text-sm text-muted-foreground">

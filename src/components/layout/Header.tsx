@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { SteeringWheel, Menu, X } from 'lucide-react';
+import { Car, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 
@@ -27,7 +27,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
-          <SteeringWheel className="h-8 w-8 text-primary" />
+          <Car className="h-8 w-8 text-primary" />
           <span className="font-headline text-xl font-bold">ThiyagaDrive</span>
         </Link>
         <nav className="hidden items-center gap-4 md:flex">
