@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Car, LogOut, UserCircle, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, UserCircle, ClipboardList, Settings } from 'lucide-react';
 import { Sidebar, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -33,6 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/admin/courses', label: 'Courses', icon: Car },
         { href: '/admin/bookings', label: 'Bookings', icon: ClipboardList },
+        { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 
     // While checking authentication, show a loading skeleton to prevent content flash

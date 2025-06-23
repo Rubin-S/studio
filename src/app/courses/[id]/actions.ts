@@ -27,9 +27,12 @@ export async function submitBookingAction(
     // Clean up formData keys to be more generic for storage
     const cleanedFormData: { [key: string]: string } = {};
     for (const key in formData) {
+      // The key is `${field.id}-${language}`. We want to find the original field label.
       const fieldId = key.split('-')[0];
       const formField = course.formFields.find(f => f.id === fieldId);
-      if (formField) {
+      
+      // We'll use the English label as the consistent key in the database.
+      if (formField && formField.label.en) {
         cleanedFormData[formField.label.en] = formData[key];
       }
     }

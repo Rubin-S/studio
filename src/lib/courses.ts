@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Course } from './types';
 import { getDb } from './firebase';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 
 const handleDbError = (context: string) => {
   console.warn(`[DB] ${context}: Firestore is not initialized. This is expected if Firebase environment variables are not set.`);
@@ -138,4 +138,28 @@ export async function deleteCourse(id: string): Promise<{ success: boolean }> {
     console.error(`[DB] Error deleting course with ID ${id}. This might be due to Firestore security rules. Please ensure your rules allow delete access.`, error);
     throw error;
   }
+}
+
+export async function deleteAllCourses(): Promise<{ success: boolean }> {
+    const db = getDb();
+    if (!db) {
+        handleDbError("Deleting all courses");
+        throw new Error("Database not initialized.");
+    }
+    try {
+        const coursesCollection = collection(db, 'courses');
+        const querySnapshot = await getDocs(coursesCollection);
+        if (querySnapshot.empty) {
+            return { success: true };
+        }
+        const batch = writeBatch(db);
+        querySnapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        return { success: true };
+    } catch (error) {
+        console.error("[DB] Error deleting all courses.", error);
+        throw error;
+    }
 }

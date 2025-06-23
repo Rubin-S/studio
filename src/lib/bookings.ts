@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Booking } from './types';
 import { getDb } from './firebase';
-import { collection, getDocs, query, orderBy, doc, runTransaction } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, runTransaction, writeBatch } from 'firebase/firestore';
 
 const handleDbError = (context: string) => {
   console.warn(`[DB] ${context}: Firestore is not initialized. This is expected if Firebase environment variables are not set.`);
@@ -87,7 +87,8 @@ export async function createBooking(
             
             transaction.set(newBookingRef, newBookingData);
             
-            const studentName = formData['Full Name (EN)'] || formData['name'] || 'Student';
+            // Try to find a meaningful name from the form data
+            const studentName = formData['Full Name'] || formData['Name'] || 'Student';
             slots[slotIndex].bookedBy = { name: studentName, bookingId: newBookingRef.id };
             transaction.update(courseRef, { slots });
 
@@ -98,5 +99,29 @@ export async function createBooking(
     } catch (error: any) {
         console.error("[DB] Error creating booking transaction.", error);
         return { success: false, error: error.message || "Failed to create booking." };
+    }
+}
+
+export async function deleteAllBookings(): Promise<{ success: boolean }> {
+    const db = getDb();
+    if (!db) {
+        handleDbError("Deleting all bookings");
+        throw new Error("Database not initialized.");
+    }
+    try {
+        const bookingsCollection = collection(db, 'bookings');
+        const querySnapshot = await getDocs(bookingsCollection);
+         if (querySnapshot.empty) {
+            return { success: true };
+        }
+        const batch = writeBatch(db);
+        querySnapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        return { success: true };
+    } catch (error) {
+        console.error("[DB] Error deleting all bookings.", error);
+        throw error;
     }
 }
