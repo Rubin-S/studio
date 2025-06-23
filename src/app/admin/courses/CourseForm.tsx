@@ -5,7 +5,7 @@ import { useFieldArray, useForm, type Control } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
@@ -21,9 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Label } from '@/components/ui/label';
 
 const localizedStringSchema = z.object({
@@ -116,7 +115,7 @@ function CopySlotsDialog({ slots, onCopy }: { slots: CourseFormValues['slots'], 
           <Select onValueChange={setSourceDate} value={sourceDate}>
             <SelectTrigger><SelectValue placeholder="Select a source date to copy from..." /></SelectTrigger>
             <SelectContent>
-              {uniqueDates.map(date => <SelectItem key={date} value={date}>{format(new Date(date), 'PPP')}</SelectItem>)}
+              {uniqueDates.map(date => <SelectItem key={date} value={date}>{format(parseISO(date), 'PPP')}</SelectItem>)}
             </SelectContent>
           </Select>
           <div>
@@ -142,6 +141,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const isEditing = !!course;
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -163,6 +163,39 @@ export function CourseForm({ course }: CourseFormProps) {
   const { fields: offerFields, append: appendOffer, remove: removeOffer } = useFieldArray({ control: form.control, name: "whatWeOffer" });
   const { fields: formFields, append: appendFormField, remove: removeFormField } = useFieldArray({ control: form.control, name: "formFields" });
   const { fields: slotFields, append: appendSlot, remove: removeSlot } = useFieldArray({ control: form.control, name: "slots" });
+  
+  const allSlots = form.watch('slots');
+
+  const datesWithSlots = useMemo(() => {
+    const validDates = new Set<string>();
+    allSlots.forEach(slot => {
+        // Ensure date is a valid string before attempting to parse
+        if (slot.date && typeof slot.date === 'string' && !isNaN(parseISO(slot.date).getTime())) {
+            validDates.add(slot.date);
+        }
+    });
+    return Array.from(validDates).map(dateStr => parseISO(dateStr));
+  }, [allSlots]);
+
+  const formattedSelectedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+
+  const handleAddSlot = () => {
+    if (selectedDate) {
+      appendSlot({
+        id: uuidv4(),
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        startTime: '',
+        endTime: '',
+        bookedBy: null,
+      });
+    } else {
+      toast({
+        title: "No Date Selected",
+        description: "Please select a date from the calendar to add slots.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const onSubmit = async (data: CourseFormValues) => {
     try {
@@ -273,21 +306,60 @@ export function CourseForm({ course }: CourseFormProps) {
         </Card>
 
         <Card>
-            <CardHeader><CardTitle>Available Time Slots</CardTitle><CardDescription>Add the specific dates and times available for booking this course.</CardDescription></CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendSlot({id: uuidv4(), date: '', startTime: '', endTime: '', bookedBy: null })}><PlusCircle className="mr-2 h-4 w-4" /> Add Slot</Button>
-                    <CopySlotsDialog slots={form.getValues('slots')} onCopy={handleCopySlots} />
-                </div>
-                {slotFields.map((field, index) => (
-                    <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end p-4 border rounded-lg">
-                        <FormField name={`slots.${index}.date`} render={({ field }) => <FormItem className="flex-1 w-full"><FormLabel>Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
-                        <FormField name={`slots.${index}.startTime`} render={({ field }) => <FormItem className="flex-1 w-full"><FormLabel>Start Time</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>} />
-                        <FormField name={`slots.${index}.endTime`} render={({ field }) => <FormItem className="flex-1 w-full"><FormLabel>End Time</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>} />
-                        <Button type="button" variant="destructive" size="icon" onClick={() => removeSlot(index)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                ))}
-            </CardContent>
+          <CardHeader>
+              <CardTitle>Available Time Slots</CardTitle>
+              <CardDescription>Select a date, then add the available time slots for that day.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="md:col-span-1 flex flex-col items-center">
+                  <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      className="rounded-md border"
+                      modifiers={{ hasSlots: datesWithSlots }}
+                      modifiersStyles={{
+                          hasSlots: { 
+                              border: '2px solid hsl(var(--primary))',
+                              borderRadius: 'var(--radius)'
+                          },
+                      }}
+                  />
+              </div>
+              <div className="md:col-span-2 space-y-4">
+                  <div className="flex flex-wrap gap-2 justify-between items-center border-b pb-4">
+                      <h3 className="font-medium">
+                          {selectedDate ? `Slots for ${format(selectedDate, 'PPP')}` : 'Select a date'}
+                      </h3>
+                      <div className="flex gap-2">
+                          <Button type="button" variant="outline" size="sm" onClick={handleAddSlot} disabled={!selectedDate}>
+                              <PlusCircle className="mr-2 h-4 w-4" /> Add Slot
+                          </Button>
+                          <CopySlotsDialog slots={allSlots} onCopy={handleCopySlots} />
+                      </div>
+                  </div>
+                  <div className="space-y-2 max-h-[24rem] overflow-y-auto p-1">
+                      {slotFields.map((field, index) => {
+                          const fieldDate = form.watch(`slots.${index}.date`);
+                          if (fieldDate === formattedSelectedDate) {
+                              return (
+                                  <div key={field.id} className="flex gap-2 items-center p-3 border rounded-lg bg-card shadow-sm animate-in fade-in-50">
+                                      <FormField name={`slots.${index}.startTime`} render={({ field }) => <FormItem className="flex-1"><FormLabel className="text-xs">Start Time</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                      <FormField name={`slots.${index}.endTime`} render={({ field }) => <FormItem className="flex-1"><FormLabel className="text-xs">End Time</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeSlot(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                  </div>
+                              );
+                          }
+                          return null;
+                      })}
+                      {allSlots.filter(s => s.date === formattedSelectedDate).length === 0 && (
+                           <div className="flex items-center justify-center h-full text-center text-sm text-muted-foreground py-10">
+                              {selectedDate ? "No slots for this date. Click 'Add Slot' to create one." : "Select a date from the calendar to manage slots."}
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </CardContent>
         </Card>
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
