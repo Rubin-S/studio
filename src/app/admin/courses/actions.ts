@@ -30,7 +30,9 @@ const formFieldSchema = z.object({
 
 const courseSlotSchema = z.object({
   id: z.string(),
-  dateTime: z.string().min(1, 'Date and time is required'),
+  date: z.string().min(1, 'Date is required'),
+  startTime: z.string().min(1, 'Start time is required'),
+  endTime: z.string().min(1, 'End time is required'),
   bookedBy: z
     .object({
       name: z.string(),

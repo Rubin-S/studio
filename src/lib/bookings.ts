@@ -25,7 +25,9 @@ export async function getBookings(): Promise<Booking[]> {
             courseId: data.courseId || '',
             courseTitle: data.courseTitle || 'Unknown Course',
             slotId: data.slotId || '',
-            slotDateTime: data.slotDateTime || new Date(0).toISOString(),
+            slotDate: data.slotDate || 'N/A',
+            slotStartTime: data.slotStartTime || 'N/A',
+            slotEndTime: data.slotEndTime || 'N/A',
             formData: data.formData && typeof data.formData === 'object' ? data.formData : {},
             submittedAt: data.submittedAt || new Date(0).toISOString(),
         };
@@ -41,8 +43,7 @@ export async function getBookings(): Promise<Booking[]> {
 export async function createBooking(
   courseId: string,
   courseTitle: string,
-  slotId: string,
-  slotDateTime: string,
+  slot: { id: string; date: string; startTime: string; endTime: string },
   formData: { [key: string]: string }
 ): Promise<{ success: boolean; bookingId?: string; error?: string }> {
     const db = getDb();
@@ -63,14 +64,14 @@ export async function createBooking(
 
             const courseData = courseDoc.data();
             const slots = courseData.slots || [];
-            const slotIndex = slots.findIndex((s: { id: string; }) => s.id === slotId);
+            const slotIndex = slots.findIndex((s: { id: string; }) => s.id === slot.id);
             
             if (slotIndex === -1) {
                 throw new Error("Slot not found.");
             }
             
-            const slot = slots[slotIndex];
-            if (slot.bookedBy) {
+            const currentSlot = slots[slotIndex];
+            if (currentSlot.bookedBy) {
                 throw new Error("This slot has already been booked.");
             }
             
@@ -79,8 +80,10 @@ export async function createBooking(
             const newBookingData = {
                 courseId,
                 courseTitle,
-                slotId,
-                slotDateTime,
+                slotId: slot.id,
+                slotDate: slot.date,
+                slotStartTime: slot.startTime,
+                slotEndTime: slot.endTime,
                 formData,
                 submittedAt: new Date().toISOString(),
             };

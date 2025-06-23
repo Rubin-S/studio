@@ -1,14 +1,15 @@
 import { getBookings } from '@/lib/bookings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 
 export const dynamic = 'force-dynamic';
 
 // Helper to safely format dates and prevent crashes from invalid date strings
 const formatDateSafe = (dateString: string, formatString: string) => {
-    const date = new Date(dateString);
+    if (!dateString) return 'N/A';
+    const date = dateString.includes('T') ? parseISO(dateString) : new Date(dateString);
     return isValid(date) ? format(date, formatString) : 'N/A';
 };
 
@@ -55,7 +56,9 @@ export default async function AdminBookingsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="whitespace-nowrap">Course</TableHead>
-                  <TableHead className="whitespace-nowrap">Slot Time</TableHead>
+                  <TableHead className="whitespace-nowrap">Slot Date</TableHead>
+                  <TableHead className="whitespace-nowrap">Start Time</TableHead>
+                  <TableHead className="whitespace-nowrap">End Time</TableHead>
                   <TableHead className="whitespace-nowrap">Submitted On</TableHead>
                   {dynamicHeaders.map(header => (
                     <TableHead key={header} className="whitespace-nowrap">{header}</TableHead>
@@ -69,7 +72,9 @@ export default async function AdminBookingsPage() {
                       <TableCell>
                           <Badge variant="outline">{booking.courseTitle}</Badge>
                       </TableCell>
-                      <TableCell>{formatDateSafe(booking.slotDateTime, 'PPpp')}</TableCell>
+                      <TableCell>{formatDateSafe(booking.slotDate, 'PPP')}</TableCell>
+                      <TableCell>{booking.slotStartTime}</TableCell>
+                      <TableCell>{booking.slotEndTime}</TableCell>
                       <TableCell>{formatDateSafe(booking.submittedAt, 'PPp')}</TableCell>
                       {dynamicHeaders.map(header => (
                         <TableCell key={header} className="font-medium">
@@ -80,7 +85,7 @@ export default async function AdminBookingsPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={3 + dynamicHeaders.length} className="text-center">No bookings found.</TableCell>
+                    <TableCell colSpan={5 + dynamicHeaders.length} className="text-center">No bookings found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

@@ -40,13 +40,12 @@ export async function submitBookingAction(
     const result = await createBooking(
       course.id,
       course.title.en,
-      slot.id,
-      slot.dateTime,
+      slot,
       cleanedFormData
     );
 
     if (result.success) {
-      revalidatePath(`/courses/${courseId}`);
+      revalidatePath(`/courses/${courseId}/book`);
       revalidatePath('/admin/bookings');
       return { success: true, bookingId: result.bookingId };
     } else {

@@ -14,7 +14,9 @@ export type FormField = {
 
 export type CourseSlot = {
   id: string;
-  dateTime: string; // ISO 8601 format
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
   bookedBy: {
     name: string;
     bookingId: string;
@@ -44,7 +46,9 @@ export type Booking = {
   courseId: string;
   courseTitle: string;
   slotId: string;
-  slotDateTime: string;
+  slotDate: string;
+  slotStartTime: string;
+  slotEndTime: string;
   formData: { [key: string]: string };
   submittedAt: string; // ISO 8601 format
 };
