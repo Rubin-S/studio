@@ -26,8 +26,8 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
         <Image
           src={course.thumbnail}
           alt={t(course.title)}
-          layout="fill"
-          objectFit="cover"
+          fill
+          className="object-cover"
           priority
           data-ai-hint="driving lesson view"
         />

@@ -58,9 +58,8 @@ export default function Home() {
                   <Image
                     src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740"
                     alt="Sri Senthil Murugan Driving School"
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
                     data-ai-hint="driving school illustration"
                   />
                 </div>

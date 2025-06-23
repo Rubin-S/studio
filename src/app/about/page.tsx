@@ -59,7 +59,7 @@ export default function AboutPage() {
                 <div className="grid gap-12 md:grid-cols-2 md:items-center">
                     <FadeIn direction='left'>
                         <div className="relative h-80 w-full rounded-lg shadow-xl md:h-96">
-                            <Image src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740" alt="Sri Senthil Murugan Driving School" layout="fill" objectFit="cover" className="rounded-lg" data-ai-hint="driving school illustration"/>
+                            <Image src="https://img.freepik.com/free-vector/driving-school-background_23-2149424638.jpg?ga=GA1.1.166634966.1750609643&semt=ais_hybrid&w=740" alt="Sri Senthil Murugan Driving School" fill className="object-cover rounded-lg" data-ai-hint="driving school illustration"/>
                         </div>
                     </FadeIn>
                     <FadeIn direction='right'>
@@ -116,7 +116,7 @@ export default function AboutPage() {
                              <FadeIn key={member.name} delay={`delay-${(index + 1) * 150}`}>
                                 <Card className="overflow-hidden text-center shadow-lg">
                                     <div className="relative h-64 w-full">
-                                       <Image src={member.image} alt={member.name} layout="fill" objectFit="cover" data-ai-hint={member.hint}/>
+                                       <Image src={member.image} alt={member.name} fill className="object-cover" data-ai-hint={member.hint}/>
                                     </div>
                                     <CardContent className="p-6">
                                         <h3 className="font-headline text-xl font-bold">{member.name}</h3>

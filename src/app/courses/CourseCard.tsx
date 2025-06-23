@@ -26,8 +26,8 @@ export default function CourseCard({ course }: CourseCardProps) {
           <Image
             src={course.thumbnail}
             alt={t(course.title)}
-            layout="fill"
-            objectFit="cover"
+            fill
+            className="object-cover"
             data-ai-hint="driving lessons"
           />
            {discountPercentage > 0 && (
