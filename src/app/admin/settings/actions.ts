@@ -121,9 +121,9 @@ export async function seedSampleDataAction() {
         id: uuidv4(),
         name: { en: 'Applicant Details', ta: 'விண்ணப்பதாரர் விவரங்கள்' },
         fields: [
-            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' } },
-            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' } },
-            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' } },
+            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' } },
+            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' } },
+            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' } },
         ],
         navigationRules: []
       }]
