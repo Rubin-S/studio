@@ -3,10 +3,11 @@
 import { useLanguage } from '@/hooks/useLanguage';
 import type { Course } from '@/lib/types';
 import Image from 'next/image';
-import { CheckCircle, Calendar, Youtube, Info, FileText, Download } from 'lucide-react';
+import { CheckCircle, Calendar, Youtube, Info, FileText, Download, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type CourseDetailClientProps = {
   course: Course;
@@ -14,7 +15,10 @@ type CourseDetailClientProps = {
 
 export default function CourseDetailClient({ course }: CourseDetailClientProps) {
   const { t } = useLanguage();
-  const hasBookingSystem = course.slots?.length > 0 && course.slots.some(slot => !slot.bookedBy);
+  // Simplified logic: Check if there's at least one slot that is not booked.
+  // Optional chaining handles cases where `slots` is null or undefined.
+  // .some() on an empty array correctly returns false.
+  const hasAvailableSlots = course.slots?.some(slot => !slot.bookedBy);
 
   return (
     <>
@@ -91,8 +95,8 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
               </div>
             </CardContent>
           </Card>
-
-          {hasBookingSystem && (
+          
+          {hasAvailableSlots ? (
             <Card className="bg-primary/5 border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl text-primary">
@@ -108,7 +112,16 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
                 </Button>
               </CardContent>
             </Card>
+          ) : (
+             <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>{t({en: "No Slots Available", ta: "இடங்கள் எதுவும் இல்லை"})}</AlertTitle>
+                <AlertDescription>
+                    {t({en: "All slots for this course are currently booked or none have been scheduled. Please check back later.", ta: "இந்தப் பாடத்திற்கான அனைத்து இடங்களும் தற்போது முன்பதிவு செய்யப்பட்டுவிட்டன அல்லது எதுவும் திட்டமிடப்படவில்லை. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ."})}
+                </AlertDescription>
+            </Alert>
           )}
+
 
             <Card>
               <CardHeader>
