@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Booking } from './types';
 import { db } from './firebase';
-import { collection, getDocs, query, orderBy, doc, runTransaction, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, runTransaction } from 'firebase/firestore';
 
 const handleDbError = (context: string) => {
   console.warn(`[DB] ${context}: Firestore is not initialized. This is expected if Firebase environment variables are not set.`);
