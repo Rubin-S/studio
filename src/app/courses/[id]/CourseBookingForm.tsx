@@ -75,7 +75,9 @@ export default function CourseBookingForm({ course }: CourseBookingFormProps) {
     }
   };
 
-  const availableSlots = course.slots.filter(slot => !slot.bookedBy && slot.dateTime);
+  const availableSlots = course.slots.filter(
+    (slot) => slot && !slot.bookedBy && slot.dateTime && !isNaN(new Date(slot.dateTime).getTime())
+  );
 
   if (isSubmitted) {
     return (
