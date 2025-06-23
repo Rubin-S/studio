@@ -12,6 +12,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_APP_ID,
 };
 
+// Check if all required environment variables are present
+const firebaseConfigIsValid =
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId;
+
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
@@ -19,6 +28,11 @@ let storage: FirebaseStorage | null = null;
 
 function getFirebaseApp() {
     if (app) return app;
+
+    if (!firebaseConfigIsValid) {
+        console.warn("Firebase configuration is missing or incomplete. Please check your environment variables (e.g., .env.local). Firebase services will be disabled.");
+        return null;
+    }
 
     try {
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
