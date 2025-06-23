@@ -15,9 +15,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import type { Course } from '@/lib/types';
+import type { Course, RegistrationForm } from '@/lib/types';
 import { createCourseAction, updateCourseAction } from './actions';
-import { PlusCircle, Trash2, Copy, Check } from 'lucide-react';
+import { PlusCircle, Trash2, Copy, Check, ArrowDown, ArrowUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -40,15 +40,29 @@ const formFieldSchema = z.object({
   options: z.array(localizedStringSchema).optional(),
 });
 
+const navigationRuleSchema = z.object({
+  fieldId: z.string().min(1),
+  value: z.string().min(1),
+  nextStepId: z.string().min(1),
+});
+
+const formStepSchema = z.object({
+  id: z.string().default(() => uuidv4()),
+  name: localizedStringSchema,
+  fields: z.array(formFieldSchema),
+  navigationRules: z.array(navigationRuleSchema).optional(),
+});
+
+const registrationFormSchema = z.object({
+  steps: z.array(formStepSchema),
+});
+
 const courseSlotSchema = z.object({
   id: z.string().default(() => uuidv4()),
   date: z.string().min(1, 'Date is required'),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  bookedBy: z.object({
-    name: z.string(),
-    bookingId: z.string(),
-  }).nullable().default(null),
+  bookedBy: z.object({ name: z.string(), bookingId: z.string() }).nullable().default(null),
 });
 
 const courseFormSchema = z.object({
@@ -64,22 +78,115 @@ const courseFormSchema = z.object({
   instructions: localizedStringSchema,
   youtubeLink: z.string().url().optional().or(z.literal('')),
   documentUrl: z.string().url().optional().or(z.literal('')),
-  formFields: z.array(formFieldSchema),
+  registrationForm: registrationFormSchema,
   slots: z.array(courseSlotSchema),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
 
-function FormFieldOptionsEditor({ control, fieldIndex }: { control: Control<CourseFormValues>; fieldIndex: number }) {
-  const { fields, append, remove } = useFieldArray({ control, name: `formFields.${fieldIndex}.options` });
+// Navigation Rules UI
+function NavigationRulesEditor({ control, stepIndex, allSteps }: { control: Control<CourseFormValues>, stepIndex: number, allSteps: CourseFormValues['registrationForm']['steps'] }) {
+  const { fields, append, remove } = useFieldArray({ control, name: `registrationForm.steps.${stepIndex}.navigationRules` });
+  const currentStep = useFormContext<CourseFormValues>().watch(`registrationForm.steps.${stepIndex}`);
+  const selectableFields = currentStep.fields.filter(f => f.type === 'select');
+
+  return (
+    <div className="mt-4 space-y-4 rounded-md border bg-muted/50 p-4">
+      <h4 className="font-medium text-sm text-muted-foreground">Conditional Navigation Rules</h4>
+      {fields.map((rule, ruleIndex) => (
+        <div key={rule.id} className="flex flex-col md:flex-row gap-2 items-end p-2 border rounded-md">
+          <FormField
+            name={`registrationForm.steps.${stepIndex}.navigationRules.${ruleIndex}.fieldId`}
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel className="text-xs">If field</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select a field..." /></SelectTrigger></FormControl>
+                  <SelectContent>{selectableFields.map(f => <SelectItem key={f.id} value={f.id}>{f.label.en}</SelectItem>)}</SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name={`registrationForm.steps.${stepIndex}.navigationRules.${ruleIndex}.value`}
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel className="text-xs">has value</FormLabel>
+                <FormControl><Input {...field} placeholder="Enter option value (EN)" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name={`registrationForm.steps.${stepIndex}.navigationRules.${ruleIndex}.nextStepId`}
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel className="text-xs">then go to step</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select a step..." /></SelectTrigger></FormControl>
+                  <SelectContent>{allSteps.filter((_, i) => i !== stepIndex).map(s => <SelectItem key={s.id} value={s.id}>{s.name.en}</SelectItem>)}</SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="button" variant="ghost" size="icon" onClick={() => remove(ruleIndex)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+        </div>
+      ))}
+      <Button type="button" variant="outline" size="sm" onClick={() => append({ fieldId: '', value: '', nextStepId: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Rule</Button>
+    </div>
+  );
+}
+
+
+// Form Fields UI within a step
+function StepFieldsEditor({ control, stepIndex }: { control: Control<CourseFormValues>; stepIndex: number }) {
+  const { fields, append, remove, move } = useFieldArray({ control, name: `registrationForm.steps.${stepIndex}.fields` });
+
+  return (
+    <div className="space-y-4 pt-4">
+      {fields.map((field, fieldIndex) => {
+        const fieldType = useFormContext<CourseFormValues>().watch(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`);
+        return (
+          <div key={field.id} className="rounded-lg border p-4 space-y-4 relative bg-card/50">
+            <div className="absolute top-2 right-2 z-10 flex gap-1">
+                <Button type="button" variant="ghost" size="icon" disabled={fieldIndex === 0} onClick={() => move(fieldIndex, fieldIndex - 1)}><ArrowUp className="h-4 w-4" /></Button>
+                <Button type="button" variant="ghost" size="icon" disabled={fieldIndex === fields.length - 1} onClick={() => move(fieldIndex, fieldIndex + 1)}><ArrowDown className="h-4 w-4" /></Button>
+                <Button type="button" variant="destructive" size="icon" onClick={() => remove(fieldIndex)}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`} render={({ field }) => <FormItem><FormLabel>Field Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="email">Email</SelectItem><SelectItem value="tel">Phone Number</SelectItem><SelectItem value="textarea">Text Area</SelectItem><SelectItem value="select">Select</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.required`} render={({ field }) => <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 h-10"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Required</FormLabel></div></FormItem>} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`} render={({ field }) => <FormItem><FormLabel>Label (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`} render={({ field }) => <FormItem><FormLabel>Label (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+            </div>
+            {fieldType !== 'select' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.placeholder.en`} render={({ field }) => <FormItem><FormLabel>Placeholder (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.placeholder.ta`} render={({ field }) => <FormItem><FormLabel>Placeholder (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+            </div>)}
+            {fieldType === 'select' && <FormFieldOptionsEditor control={control} fieldNamePrefix={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.options`} />}
+          </div>
+        );
+      })}
+      <Button type="button" variant="outline" size="sm" onClick={() => append({ id: uuidv4(), type: 'text', label: { en: '', ta: '' }, placeholder: { en: '', ta: '' }, required: false, options: [] })}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Field</Button>
+    </div>
+  );
+}
+
+// Select options UI
+function FormFieldOptionsEditor({ control, fieldNamePrefix }: { control: Control<CourseFormValues>; fieldNamePrefix: string }) {
+  const { fields, append, remove } = useFieldArray({ control, name: fieldNamePrefix as any });
   return (
     <div className="mt-4 space-y-4 rounded-md border bg-muted/50 p-4">
       <h4 className="font-medium text-sm text-muted-foreground">Options for Select Field</h4>
       <div className="space-y-4">
         {fields.map((field, optionIndex) => (
           <div key={field.id} className="flex gap-2 items-end">
-            <FormField name={`formFields.${fieldIndex}.options.${optionIndex}.en`} render={({ field }) => <FormItem className="flex-1"><FormLabel className="text-xs">Option (EN)</FormLabel><FormControl><Input {...field} placeholder="Option in English" /></FormControl><FormMessage /></FormItem>} />
-            <FormField name={`formFields.${fieldIndex}.options.${optionIndex}.ta`} render={({ field }) => <FormItem className="flex-1"><FormLabel className="text-xs">Option (TA)</FormLabel><FormControl><Input {...field} placeholder="Option in Tamil" /></FormControl><FormMessage /></FormItem>} />
+            <FormField name={`${fieldNamePrefix}.${optionIndex}.en`} render={({ field }) => <FormItem className="flex-1"><FormLabel className="text-xs">Option (EN)</FormLabel><FormControl><Input {...field} placeholder="Option in English" /></FormControl><FormMessage /></FormItem>} />
+            <FormField name={`${fieldNamePrefix}.${optionIndex}.ta`} render={({ field }) => <FormItem className="flex-1"><FormLabel className="text-xs">Option (TA)</FormLabel><FormControl><Input {...field} placeholder="Option in Tamil" /></FormControl><FormMessage /></FormItem>} />
             <Button type="button" variant="ghost" size="icon" onClick={() => remove(optionIndex)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
           </div>
         ))}
@@ -89,12 +196,24 @@ function FormFieldOptionsEditor({ control, fieldIndex }: { control: Control<Cour
   );
 }
 
+
 function CopySlotsDialog({ slots, onCopy }: { slots: CourseFormValues['slots'], onCopy: (sourceDate: string, targetDates: Date[]) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [sourceDate, setSourceDate] = useState<string>('');
   const [targetDates, setTargetDates] = useState<Date[]>([]);
 
-  const uniqueDates = Array.from(new Set(slots.map(s => s.date).filter(Boolean))).sort();
+  const uniqueDates = useMemo(() => {
+    const dates = new Set<string>();
+    slots.forEach(slot => {
+        if (slot.date && typeof slot.date === 'string') {
+            const parsedDate = parseISO(slot.date);
+            if (!isNaN(parsedDate.getTime())) {
+                dates.add(slot.date);
+            }
+        }
+    });
+    return Array.from(dates).sort();
+  }, [slots]);
 
   const handleCopy = () => {
     if (sourceDate && targetDates.length > 0) {
@@ -144,9 +263,9 @@ interface CourseFormProps {
 
 const steps = [
     { id: 1, name: 'Course Info', fields: ['title.en', 'title.ta', 'shortDescription.en', 'shortDescription.ta', 'detailedDescription.en', 'detailedDescription.ta', 'instructions.en', 'instructions.ta', 'whatWeOffer'] },
-    { id: 2, name: 'Registration Form', fields: [] },
-    { id: 3, name: 'Time Slots', fields: [] },
-    { id: 4, name: 'Pricing & Media', fields: ['price.original', 'price.discounted', 'thumbnail'] },
+    { id: 2, name: 'Registration Form', fields: ['registrationForm'] },
+    { id: 3, name: 'Time Slots', fields: ['slots'] },
+    { id: 4, name: 'Pricing & Media', fields: ['price.original', 'price.discounted', 'thumbnail', 'youtubeLink', 'documentUrl'] },
   ];
 
 export function CourseForm({ course }: CourseFormProps) {
@@ -168,16 +287,17 @@ export function CourseForm({ course }: CourseFormProps) {
         instructions: { en: '', ta: '' },
         youtubeLink: '',
         documentUrl: '',
-        formFields: [],
+        registrationForm: { steps: [{ id: uuidv4(), name: { en: 'Step 1', ta: 'படி 1' }, fields: [] }] },
         slots: [],
     },
   });
 
   const { fields: offerFields, append: appendOffer, remove: removeOffer } = useFieldArray({ control: form.control, name: "whatWeOffer" });
-  const { fields: formFields, append: appendFormField, remove: removeFormField } = useFieldArray({ control: form.control, name: "formFields" });
+  const { fields: registrationSteps, append: appendStep, remove: removeStep, move: moveStep } = useFieldArray({ control: form.control, name: "registrationForm.steps" });
   const { fields: slotFields, append: appendSlot, remove: removeSlot } = useFieldArray({ control: form.control, name: "slots" });
   
   const allSlots = form.watch('slots');
+  const allSteps = form.watch('registrationForm.steps');
 
   const datesWithSlots = useMemo(() => {
     const validDates = new Set<string>();
@@ -333,30 +453,28 @@ export function CourseForm({ course }: CourseFormProps) {
         {currentStep === 2 && (
              <div className="space-y-8 animate-in fade-in-50">
                 <Card>
-                    <CardHeader><CardTitle>Custom Registration Form</CardTitle><CardDescription>Build a form for users to fill out when booking. Add any fields you need to collect information.</CardDescription></CardHeader>
+                    <CardHeader><CardTitle>Custom Registration Form Builder</CardTitle><CardDescription>Create a multi-step form for users. Add steps, then add fields to each step.</CardDescription></CardHeader>
                     <CardContent className="space-y-6">
-                        {formFields.map((field, index) => {
-                        const fieldType = form.watch(`formFields.${index}.type`);
-                        return (
-                            <div key={field.id} className="rounded-lg border p-4 space-y-4 relative bg-card">
-                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 z-10" onClick={() => removeFormField(index)}><Trash2 className="h-4 w-4" /></Button>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField name={`formFields.${index}.type`} render={({ field }) => <FormItem><FormLabel>Field Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="email">Email</SelectItem><SelectItem value="tel">Phone Number</SelectItem><SelectItem value="textarea">Text Area</SelectItem><SelectItem value="select">Select</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
-                                    <FormField name={`formFields.${index}.required`} render={({ field }) => <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 h-10"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Required</FormLabel></div></FormItem>} />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField name={`formFields.${index}.label.en`} render={({ field }) => <FormItem><FormLabel>Label (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
-                                    <FormField name={`formFields.${index}.label.ta`} render={({ field }) => <FormItem><FormLabel>Label (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
-                                </div>
-                                {fieldType !== 'select' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <FormField name={`formFields.${index}.placeholder.en`} render={({ field }) => <FormItem><FormLabel>Placeholder (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
-                                        <FormField name={`formFields.${index}.placeholder.ta`} render={({ field }) => <FormItem><FormLabel>Placeholder (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
-                                </div>)}
-                                {fieldType === 'select' && <FormFieldOptionsEditor control={form.control} fieldIndex={index} />}
-                            </div>
-                        );
-                        })}
-                        <Button type="button" variant="outline" size="sm" onClick={() => appendFormField({id: uuidv4(), type: 'text', label: { en: '', ta: '' }, placeholder: { en: '', ta: '' }, required: false, options: [] })}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Field</Button>
+                        {registrationSteps.map((step, stepIndex) => (
+                            <Card key={step.id} className="p-4 bg-muted/30">
+                                <CardHeader className="flex flex-row items-center justify-between p-2">
+                                    <div className="flex-1 space-y-2">
+                                        <FormField name={`registrationForm.steps.${stepIndex}.name.en`} render={({ field }) => <FormItem><FormLabel>Step Name (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                        <FormField name={`registrationForm.steps.${stepIndex}.name.ta`} render={({ field }) => <FormItem><FormLabel>Step Name (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                    </div>
+                                    <div className="flex flex-col gap-1 ml-4">
+                                        <Button type="button" variant="ghost" size="icon" disabled={stepIndex === 0} onClick={() => moveStep(stepIndex, stepIndex - 1)}><ArrowUp className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="ghost" size="icon" disabled={stepIndex === registrationSteps.length - 1} onClick={() => moveStep(stepIndex, stepIndex + 1)}><ArrowDown className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="destructive" size="icon" onClick={() => removeStep(stepIndex)}><Trash2 className="h-4 w-4" /></Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-2">
+                                    <StepFieldsEditor control={form.control} stepIndex={stepIndex} />
+                                    <NavigationRulesEditor control={form.control} stepIndex={stepIndex} allSteps={allSteps} />
+                                </CardContent>
+                            </Card>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" onClick={() => appendStep({id: uuidv4(), name: { en: `Step ${registrationSteps.length + 1}`, ta: `படி ${registrationSteps.length + 1}`}, fields: []})}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Step</Button>
                     </CardContent>
                 </Card>
              </div>

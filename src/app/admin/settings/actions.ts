@@ -7,6 +7,7 @@ import {
 } from '@/lib/courses';
 import { deleteAllBookings } from '@/lib/bookings';
 import { v4 as uuidv4 } from 'uuid';
+import { format } from 'date-fns';
 
 export async function deleteAllDataAction() {
   // Make deletion sequential to prevent potential race conditions
@@ -22,6 +23,11 @@ export async function deleteAllDataAction() {
 export async function seedSampleDataAction() {
   await deleteAllDataAction();
 
+  const step1Id = uuidv4();
+  const step2Id = uuidv4();
+  const step3Id = uuidv4();
+  const vehicleFieldId = uuidv4();
+
   const sampleCourse = {
     title: {
       en: 'Comprehensive Car Training',
@@ -29,8 +35,8 @@ export async function seedSampleDataAction() {
     },
     thumbnail: 'https://placehold.co/600x400.png',
     shortDescription: {
-      en: 'Master driving with our comprehensive 15-day course covering theory and practical skills.',
-      ta: 'கோட்பாடு மற்றும் நடைமுறை திறன்களை உள்ளடக்கிய எங்கள் விரிவான 15-நாள் பாடத்திட்டத்துடன் ஓட்டுவதில் தேர்ச்சி பெறுங்கள்.',
+      en: 'Master driving with our comprehensive course covering theory and practical skills.',
+      ta: 'கோட்பாடு மற்றும் நடைமுறை திறன்களை உள்ளடக்கிய எங்கள் விரிவான பாடத்திட்டத்துடன் ஓட்டுவதில் தேர்ச்சி பெறுங்கள்.',
     },
     detailedDescription: {
       en: 'Our most popular course is designed to make you a confident and safe driver. We cover all aspects of driving, from understanding vehicle controls to navigating complex traffic situations. The course concludes with preparation for your RTO test.',
@@ -49,16 +55,41 @@ export async function seedSampleDataAction() {
     },
     youtubeLink: 'https://www.youtube.com/embed/videoseries?list=PLgY5_1Zg0hAQ_c64D8s-wkw_p26c-g4-B',
     documentUrl: '',
-    formFields: [
-      { id: uuidv4(), type: 'text' as const, required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' } },
-      { id: uuidv4(), type: 'email' as const, required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' } },
-      { id: uuidv4(), type: 'tel' as const, required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' } },
-    ],
+    registrationForm: {
+      steps: [
+        {
+          id: step1Id,
+          name: { en: 'Vehicle Choice', ta: 'வாகனத் தேர்வு' },
+          fields: [
+            { id: vehicleFieldId, type: 'select' as const, required: true, label: { en: 'Select Vehicle Type', ta: 'வாகன வகையைத் தேர்ந்தெடுக்கவும்' }, options: [{ en: 'Car', ta: 'கார்' }, { en: 'Motorcycle', ta: 'மோட்டார் சைக்கிள்' }] }
+          ],
+          navigationRules: [
+            { fieldId: vehicleFieldId, value: 'Motorcycle', nextStepId: step3Id } // Skip to contact info for motorcycles
+          ]
+        },
+        {
+          id: step2Id,
+          name: { en: 'License Details', ta: 'உரிம விவரங்கள்' },
+          fields: [
+            { id: uuidv4(), type: 'text' as const, required: true, label: { en: "Learner's License Number", ta: 'பழகுநர் உரிம எண்' }, placeholder: { en: 'TN-32-A-12345', ta: 'TN-32-A-12345' } },
+          ]
+        },
+        {
+          id: step3Id,
+          name: { en: 'Contact Information', ta: 'தொடர்பு தகவல்' },
+          fields: [
+            { id: uuidv4(), type: 'text' as const, required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' } },
+            { id: uuidv4(), type: 'email' as const, required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' } },
+            { id: uuidv4(), type: 'tel' as const, required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' } },
+          ]
+        }
+      ]
+    },
     slots: [
-      { id: uuidv4(), dateTime: new Date(Date.now() + 1 * 24 * 3600 * 1000).toISOString(), bookedBy: null },
-      { id: uuidv4(), dateTime: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(), bookedBy: null },
-      { id: uuidv4(), dateTime: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), bookedBy: null },
-      { id: uuidv4(), dateTime: new Date(Date.now() + 4 * 24 * 3600 * 1000).toISOString(), bookedBy: null },
+      { id: uuidv4(), date: format(new Date(Date.now() + 1 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
+      { id: uuidv4(), date: format(new Date(Date.now() + 1 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '10:00', endTime: '11:00', bookedBy: null },
+      { id: uuidv4(), date: format(new Date(Date.now() + 2 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
+      { id: uuidv4(), date: format(new Date(Date.now() + 3 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '11:00', endTime: '12:00', bookedBy: null },
     ],
   };
 

@@ -28,6 +28,23 @@ const formFieldSchema = z.object({
   options: z.array(localizedStringSchema).optional(),
 });
 
+const navigationRuleSchema = z.object({
+  fieldId: z.string().min(1),
+  value: z.string().min(1),
+  nextStepId: z.string().min(1),
+});
+
+const formStepSchema = z.object({
+  id: z.string(),
+  name: localizedStringSchema,
+  fields: z.array(formFieldSchema),
+  navigationRules: z.array(navigationRuleSchema).optional(),
+});
+
+const registrationFormSchema = z.object({
+  steps: z.array(formStepSchema),
+});
+
 const courseSlotSchema = z.object({
   id: z.string(),
   date: z.string().min(1, 'Date is required'),
@@ -54,24 +71,34 @@ const formSchema = z.object({
   instructions: localizedStringSchema,
   youtubeLink: z.string().url().optional().or(z.literal('')),
   documentUrl: z.string().url().optional().or(z.literal('')),
-  formFields: z.array(formFieldSchema),
+  registrationForm: registrationFormSchema,
   slots: z.array(courseSlotSchema),
 });
 
-export async function createCourseAction(data: z.infer<typeof formSchema>) {
-  const validatedData = formSchema.parse(data);
-  const dataWithIds = {
-    ...validatedData,
-    formFields: validatedData.formFields.map((field) => ({
-      ...field,
-      id: field.id || uuidv4(),
-    })),
-    slots: validatedData.slots.map((slot) => ({
+// Helper function to ensure all nested items have IDs
+const ensureIds = (data: z.infer<typeof formSchema>) => {
+  return {
+    ...data,
+    registrationForm: {
+      steps: data.registrationForm.steps.map(step => ({
+        ...step,
+        id: step.id || uuidv4(),
+        fields: step.fields.map(field => ({
+          ...field,
+          id: field.id || uuidv4(),
+        })),
+      })),
+    },
+    slots: data.slots.map(slot => ({
       ...slot,
       id: slot.id || uuidv4(),
-      bookedBy: null,
     })),
   };
+};
+
+export async function createCourseAction(data: z.infer<typeof formSchema>) {
+  const validatedData = formSchema.parse(data);
+  const dataWithIds = ensureIds(validatedData);
   await createCourse(dataWithIds);
   revalidatePath('/admin/courses');
   revalidatePath('/courses');
@@ -82,17 +109,7 @@ export async function updateCourseAction(
   data: z.infer<typeof formSchema>
 ) {
   const validatedData = formSchema.parse(data);
-  const dataWithIds = {
-    ...validatedData,
-    formFields: validatedData.formFields.map((field) => ({
-      ...field,
-      id: field.id || uuidv4(),
-    })),
-    slots: validatedData.slots.map((slot) => ({
-      ...slot,
-      id: slot.id || uuidv4(),
-    })),
-  };
+  const dataWithIds = ensureIds(validatedData);
   await updateCourse(id, dataWithIds);
   revalidatePath('/admin/courses');
   revalidatePath(`/courses/${id}`);

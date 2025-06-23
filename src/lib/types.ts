@@ -12,6 +12,23 @@ export type FormField = {
   options?: LocalizedString[];
 };
 
+export type NavigationRule = {
+  fieldId: string; // ID of the field that triggers this rule
+  value: string; // The English value of the option to match
+  nextStepId: string; // The ID of the step to navigate to
+};
+
+export type FormStep = {
+  id: string;
+  name: LocalizedString;
+  fields: FormField[];
+  navigationRules?: NavigationRule[];
+};
+
+export type RegistrationForm = {
+  steps: FormStep[];
+};
+
 export type CourseSlot = {
   id: string;
   date: string; // YYYY-MM-DD
@@ -36,8 +53,8 @@ export type Course = {
   };
   instructions: LocalizedString;
   youtubeLink?: string;
-  documentUrl?: string; // For PDF/Image
-  formFields: FormField[];
+  documentUrl?: string;
+  registrationForm: RegistrationForm;
   slots: CourseSlot[];
 };
 
