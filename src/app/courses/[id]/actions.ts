@@ -3,11 +3,16 @@
 import { revalidatePath } from 'next/cache';
 import { createBooking } from '@/lib/bookings';
 import { getCourseById } from '@/lib/courses';
+import { getStorageInstance } from '@/lib/firebase';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function submitBookingAction(
   courseId: string,
   slotId: string,
-  formData: { [key: string]: any }
+  formData: { [key: string]: any },
+  transactionId: string,
+  paymentScreenshotDataUrl: string | null
 ) {
   try {
     const course = await getCourseById(courseId);
@@ -22,6 +27,26 @@ export async function submitBookingAction(
 
     if (slot.bookedBy) {
       return { success: false, error: 'This slot has already been booked.' };
+    }
+
+    const storage = getStorageInstance();
+    if (!storage) {
+        return { success: false, error: 'Storage service not initialized.' };
+    }
+
+    let paymentScreenshotUrl = '';
+    if (paymentScreenshotDataUrl) {
+        try {
+            const filePath = `payment_screenshots/${courseId}/${uuidv4()}`;
+            const storageRef = ref(storage, filePath);
+            const uploadTask = await uploadString(storageRef, paymentScreenshotDataUrl, 'data_url');
+            paymentScreenshotUrl = await getDownloadURL(uploadTask.ref);
+        } catch (error) {
+            console.error("Error uploading screenshot:", error);
+            return { success: false, error: "Failed to upload payment screenshot." };
+        }
+    } else {
+        return { success: false, error: 'Payment screenshot is required.' };
     }
 
     // Clean up formData keys to be more generic for storage
@@ -50,7 +75,9 @@ export async function submitBookingAction(
       course.id,
       course.title.en,
       slot,
-      cleanedFormData
+      cleanedFormData,
+      transactionId,
+      paymentScreenshotUrl
     );
 
     if (result.success) {

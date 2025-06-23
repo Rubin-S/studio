@@ -18,9 +18,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { submitBookingAction } from '../actions';
 import { format, parseISO, isValid } from 'date-fns';
-import { Clock, Terminal, CheckCircle } from 'lucide-react';
+import { Clock, Terminal, CheckCircle, Upload, ScanQrCode } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import Image from 'next/image';
 
 type BookingPageClientProps = {
   course: Course;
@@ -67,6 +68,9 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   const { registrationForm } = course;
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
+  const [transactionId, setTransactionId] = useState('');
+  const [paymentScreenshotPreview, setPaymentScreenshotPreview] = useState<string | null>(null);
+
   const { slotsByDate, availableDays } = useMemo(() => {
     const slotsByDate: { [key: string]: typeof course.slots } = {};
     course.slots?.forEach(slot => {
@@ -111,6 +115,26 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   });
 
   const isFinalStep = currentStepIndex === registrationForm.steps.length - 1;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            toast({
+                variant: 'destructive',
+                title: 'File Too Large',
+                description: 'Please upload a screenshot under 2MB.',
+            });
+            e.target.value = ''; // Clear the input
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPaymentScreenshotPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
+  };
 
   const handleNextStep = async () => {
     const currentStep = registrationForm.steps[currentStepIndex];
@@ -158,12 +182,17 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   };
 
 
-  const onSubmit = async (data: z.infer<typeof dynamicSchema>) => {
+  const onFinalSubmit = form.handleSubmit(async (data) => {
     if (!selectedSlotId) {
         toast({ variant: 'destructive', title: 'Error', description: 'Please select a date and time slot first.' });
         return;
     }
-    const result = await submitBookingAction(course.id, selectedSlotId, data);
+    if (!transactionId.trim() || !paymentScreenshotPreview) {
+        toast({ variant: 'destructive', title: 'Missing Payment Info', description: 'Please provide the transaction ID and upload a screenshot.' });
+        return;
+    }
+    
+    const result = await submitBookingAction(course.id, selectedSlotId, data, transactionId.trim(), paymentScreenshotPreview);
     if (result.success) {
         setIsSubmitted(true);
         form.reset();
@@ -171,57 +200,61 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     } else {
         toast({ variant: 'destructive', title: 'Booking Failed', description: result.error || 'An unexpected error occurred.' });
     }
-  };
+  });
 
   if (showPayment) {
-    const selectedSlot = course.slots.find(s => s.id === selectedSlotId);
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Confirm Your Booking', ta: 'உங்கள் முன்பதிவை உறுதிப்படுத்தவும்' })}</CardTitle>
-                <CardDescription className="text-center">{t({ en: 'Review your details and complete the payment.', ta: 'உங்கள் விவரங்களை மதிப்பாய்வு செய்து பணம் செலுத்துவதை முடிக்கவும்.' })}</CardDescription>
+                <CardTitle className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Complete Your Payment', ta: 'உங்கள் கட்டணத்தை முடிக்கவும்' })}</CardTitle>
+                <CardDescription className="text-center">{t({ en: 'Scan to pay, then enter the transaction details below.', ta: 'பணம் செலுத்த ஸ்கேன் செய்து, பரிவர்த்தனை விவரங்களை கீழே உள்ளிடவும்.' })}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="rounded-lg border p-4 space-y-4">
-                    <h3 className="font-semibold text-lg">{t(course.title)}</h3>
-                    {selectedSlot && (
-                        <div className="text-muted-foreground text-sm space-y-1">
-                            <p><strong>{t({ en: 'Date', ta: 'தேதி' })}:</strong> {format(parseISO(selectedSlot.date), 'PPP')}</p>
-                            <p><strong>{t({ en: 'Time', ta: 'நேரம்' })}:</strong> {selectedSlot.startTime} - {selectedSlot.endTime}</p>
-                        </div>
-                    )}
+                 <div className="flex flex-col items-center gap-4 rounded-lg border p-4 bg-background">
+                    <Image src="https://placehold.co/250x250.png" alt="GPay UPI QR Code" width={200} height={200} data-ai-hint="qr code"/>
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground"><ScanQrCode className="h-4 w-4" /> {t({ en: 'Scan with any UPI app', ta: 'எந்த UPI செயலி மூலமும் ஸ்கேன் செய்யவும்' })}</p>
                 </div>
+                
                 <div className="rounded-lg border p-4 space-y-2">
                     <h3 className="font-semibold text-lg">{t({ en: 'Payment Summary', ta: 'கட்டண சுருக்கம்' })}</h3>
-                    <div className="flex justify-between text-muted-foreground">
-                        <span>{t({ en: 'Original Price', ta: 'அசல் விலை' })}</span>
-                        <span>₹{course.price.original.toLocaleString('en-IN')}</span>
-                    </div>
-                     <div className="flex justify-between text-muted-foreground">
-                        <span>{t({ en: 'Discount', ta: 'தள்ளுபடி' })}</span>
-                        <span>- ₹{(course.price.original - course.price.discounted).toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg text-primary">
+                     <div className="flex justify-between font-bold text-lg text-primary">
                         <span>{t({ en: 'Amount to Pay', ta: 'செலுத்த வேண்டிய தொகை' })}</span>
                         <span>₹{course.price.discounted.toLocaleString('en-IN')}</span>
                     </div>
+                    <div className="flex justify-between text-muted-foreground text-sm">
+                        <span>{t({ en: 'Original Price', ta: 'அசல் விலை' })}</span>
+                        <span className="line-through">₹{course.price.original.toLocaleString('en-IN')}</span>
+                    </div>
                 </div>
-                
-                <Alert>
-                  <Terminal className="h-4 w-4" />
-                  <AlertTitle>{t({ en: 'Demo Payment', ta: 'டெமோ கட்டணம்' })}</AlertTitle>
-                  <AlertDescription>
-                    {t({ en: 'This is a demo. No real payment will be processed. Click "Confirm & Pay" to complete your booking.', ta: 'இது ஒரு டெமோ. உண்மையான கட்டணம் எதுவும் செயலாக்கப்படாது. உங்கள் முன்பதிவை முடிக்க "உறுதிசெய்து பணம் செலுத்து" என்பதைக் கிளிக் செய்யவும்.' })}
-                  </AlertDescription>
-                </Alert>
 
+                <div className="space-y-4">
+                    <FormItem>
+                        <FormLabel>{t({ en: 'UPI Transaction ID', ta: 'UPI பரிவர்த்தனை ஐடி' })}*</FormLabel>
+                        <Input value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder={t({ en: 'Enter the 12-digit transaction ID', ta: '12 இலக்க பரிவர்த்தனை ஐடியை உள்ளிடவும்' })} />
+                    </FormItem>
+                    <FormItem>
+                        <FormLabel>{t({ en: 'Upload Payment Screenshot', ta: 'பணம் செலுத்தியதற்கான ஸ்கிரீன்ஷாட்டைப் பதிவேற்றவும்' })}*</FormLabel>
+                        <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
+                         <FormMessage>{t({ en: 'Max file size: 2MB', ta: 'அதிகபட்ச கோப்பு அளவு: 2MB' })}</FormMessage>
+                    </FormItem>
+                    {paymentScreenshotPreview && (
+                        <div>
+                          <p className="text-sm font-medium mb-2">Screenshot Preview:</p>
+                          <div className="relative w-full h-48 border rounded-md overflow-hidden bg-muted">
+                              <Image src={paymentScreenshotPreview} alt="Screenshot preview" layout="fill" objectFit="contain" />
+                          </div>
+                        </div>
+                    )}
+                </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={() => setShowPayment(false)}>
+                <Button variant="outline" onClick={() => setShowPayment(false)} disabled={form.formState.isSubmitting}>
                     {t({ en: 'Back to Form', ta: 'படிவத்திற்குத் திரும்பு' })}
                 </Button>
-                <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? t({ en: 'Processing...', ta: 'செயலாக்குகிறது...' }) : t({ en: 'Confirm & Pay', ta: 'உறுதிசெய்து பணம் செலுத்து' })}
+                <Button onClick={onFinalSubmit} disabled={form.formState.isSubmitting || !transactionId || !paymentScreenshotPreview}>
+                    {form.formState.isSubmitting ? t({ en: 'Processing...', ta: 'செயலாக்குகிறது...' }) : (
+                       <><Upload className="mr-2 h-4 w-4" />{t({ en: 'Confirm Booking', ta: 'முன்பதிவை உறுதிப்படுத்தவும்' })}</>
+                    )}
                 </Button>
             </CardFooter>
         </Card>
@@ -232,9 +265,9 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     return (
       <Card className="text-center p-8">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-        <CardTitle>{t({ en: "Booking Confirmed!", ta: "முன்பதிவு உறுதியானது!" })}</CardTitle>
+        <CardTitle>{t({ en: "Booking Submitted!", ta: "முன்பதிவு சமர்ப்பிக்கப்பட்டது!" })}</CardTitle>
         <CardDescription className="mt-2">
-            {t({ en: "Your slot is reserved. We've received your details and will contact you shortly.", ta: "உங்கள் இடம் ஒதுக்கப்பட்டுள்ளது. உங்கள் விவரங்களைப் பெற்றுள்ளோம், விரைவில் உங்களைத் தொடர்புகொள்வோம்."})}
+            {t({ en: "Your slot will be confirmed after payment verification. We will contact you shortly.", ta: "பணம் செலுத்தியதைச் சரிபார்த்த பிறகு உங்கள் இடம் உறுதிசெய்யப்படும். நாங்கள் விரைவில் உங்களைத் தொடர்புகொள்வோம்."})}
         </CardDescription>
         <Button onClick={() => router.push('/courses')} className="mt-6">
             {t({ en: "Back to Courses", ta: "படிப்புகளுக்குத் திரும்பு" })}
@@ -319,7 +352,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
         <div className={cn(!selectedSlotId && "opacity-50 pointer-events-none")}>
             <h3 className="font-semibold mb-4 text-center">{t({ en: "2. Your Details", ta: "2. உங்கள் விவரங்கள்"})}</h3>
             <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-4">
                  {currentStepData.fields.map((field) => renderFormField(field, language, t))}
                  
                  <div className="flex justify-between pt-4">
@@ -337,7 +370,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
                         </Button>
                     )}
                  </div>
-            </form>
+            </div>
             </FormProvider>
         </div>
       </CardContent>

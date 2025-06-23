@@ -30,6 +30,9 @@ export async function getBookings(): Promise<Booking[]> {
             slotEndTime: data.slotEndTime || 'N/A',
             formData: data.formData && typeof data.formData === 'object' ? data.formData : {},
             submittedAt: data.submittedAt || new Date(0).toISOString(),
+            transactionId: data.transactionId || '',
+            paymentScreenshotUrl: data.paymentScreenshotUrl || '',
+            paymentVerified: data.paymentVerified === true,
         };
         return booking;
     });
@@ -44,7 +47,9 @@ export async function createBooking(
   courseId: string,
   courseTitle: string,
   slot: { id: string; date: string; startTime: string; endTime: string },
-  formData: { [key: string]: string }
+  formData: { [key: string]: string },
+  transactionId: string,
+  paymentScreenshotUrl: string
 ): Promise<{ success: boolean; bookingId?: string; error?: string }> {
     const db = getDb();
     if (!db) {
@@ -86,6 +91,9 @@ export async function createBooking(
                 slotEndTime: slot.endTime,
                 formData,
                 submittedAt: new Date().toISOString(),
+                transactionId,
+                paymentScreenshotUrl,
+                paymentVerified: false,
             };
             
             transaction.set(newBookingRef, newBookingData);

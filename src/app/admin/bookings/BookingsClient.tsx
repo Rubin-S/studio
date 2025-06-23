@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, isValid, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FileSearch } from 'lucide-react';
 
 interface BookingsClientProps {
@@ -76,6 +77,9 @@ export default function BookingsClient({ courses, bookings }: BookingsClientProp
                       {tableHeaders.map(header => (
                         <TableHead key={header} className="whitespace-nowrap">{header}</TableHead>
                       ))}
+                       <TableHead className="whitespace-nowrap">Transaction ID</TableHead>
+                       <TableHead className="whitespace-nowrap">Screenshot</TableHead>
+                       <TableHead className="whitespace-nowrap">Payment Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -91,6 +95,23 @@ export default function BookingsClient({ courses, bookings }: BookingsClientProp
                             {booking.formData?.[header] || 'N/A'}
                           </TableCell>
                         ))}
+                        <TableCell>{booking.transactionId || 'N/A'}</TableCell>
+                        <TableCell>
+                           {booking.paymentScreenshotUrl ? (
+                            <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                              <a href={booking.paymentScreenshotUrl} target="_blank" rel="noopener noreferrer">
+                                View
+                              </a>
+                            </Button>
+                          ) : (
+                            'N/A'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                           <Badge variant={booking.paymentVerified ? 'secondary' : 'destructive'}>
+                              {booking.paymentVerified ? 'Verified' : 'Pending'}
+                           </Badge>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
