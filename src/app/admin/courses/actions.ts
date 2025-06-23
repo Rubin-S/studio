@@ -2,8 +2,17 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { createCourse, updateCourse, deleteCourse } from '@/lib/courses';
+import { createCourse, updateCourse } from '@/lib/courses';
 import { v4 as uuidv4 } from 'uuid';
+import { getDb } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  query,
+  where,
+  getDocs,
+  writeBatch,
+} from 'firebase/firestore';
 
 const localizedStringSchema = z.object({
   en: z.string().min(1, 'English value is required'),
@@ -22,10 +31,12 @@ const formFieldSchema = z.object({
 const courseSlotSchema = z.object({
   id: z.string(),
   dateTime: z.string().min(1, 'Date and time is required'),
-  bookedBy: z.object({
-    name: z.string(),
-    bookingId: z.string(),
-  }).nullable(),
+  bookedBy: z
+    .object({
+      name: z.string(),
+      bookingId: z.string(),
+    })
+    .nullable(),
 });
 
 const formSchema = z.object({
@@ -49,20 +60,36 @@ export async function createCourseAction(data: z.infer<typeof formSchema>) {
   const validatedData = formSchema.parse(data);
   const dataWithIds = {
     ...validatedData,
-    formFields: validatedData.formFields.map(field => ({ ...field, id: field.id || uuidv4() })),
-    slots: validatedData.slots.map(slot => ({ ...slot, id: slot.id || uuidv4(), bookedBy: null })),
+    formFields: validatedData.formFields.map((field) => ({
+      ...field,
+      id: field.id || uuidv4(),
+    })),
+    slots: validatedData.slots.map((slot) => ({
+      ...slot,
+      id: slot.id || uuidv4(),
+      bookedBy: null,
+    })),
   };
   await createCourse(dataWithIds);
   revalidatePath('/admin/courses');
   revalidatePath('/courses');
 }
 
-export async function updateCourseAction(id: string, data: z.infer<typeof formSchema>) {
+export async function updateCourseAction(
+  id: string,
+  data: z.infer<typeof formSchema>
+) {
   const validatedData = formSchema.parse(data);
   const dataWithIds = {
     ...validatedData,
-    formFields: validatedData.formFields.map(field => ({ ...field, id: field.id || uuidv4() })),
-    slots: validatedData.slots.map(slot => ({ ...slot, id: slot.id || uuidv4() })),
+    formFields: validatedData.formFields.map((field) => ({
+      ...field,
+      id: field.id || uuidv4(),
+    })),
+    slots: validatedData.slots.map((slot) => ({
+      ...slot,
+      id: slot.id || uuidv4(),
+    })),
   };
   await updateCourse(id, dataWithIds);
   revalidatePath('/admin/courses');
@@ -71,9 +98,39 @@ export async function updateCourseAction(id: string, data: z.infer<typeof formSc
 }
 
 export async function deleteCourseAction(id: string) {
-  if (!id) throw new Error("ID is required");
-  await deleteCourse(id);
-  revalidatePath('/admin/courses');
-  revalidatePath('/courses');
-  revalidatePath('/admin/bookings');
+  if (!id) {
+    throw new Error('ID is required');
+  }
+
+  const db = getDb();
+  if (!db) {
+    throw new Error('Database not initialized.');
+  }
+
+  try {
+    const batch = writeBatch(db);
+
+    // 1. Find and delete associated bookings for the course
+    const bookingsRef = collection(db, 'bookings');
+    const q = query(bookingsRef, where('courseId', '==', id));
+    const bookingsSnapshot = await getDocs(q);
+    bookingsSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // 2. Delete the course itself
+    const courseRef = doc(db, 'courses', id);
+    batch.delete(courseRef);
+
+    // 3. Commit all deletions in one atomic operation
+    await batch.commit();
+
+    revalidatePath('/admin/courses');
+    revalidatePath('/courses');
+    revalidatePath('/admin/bookings');
+  } catch (error) {
+    console.error('Failed to delete course and its bookings:', error);
+    // Re-throw the error so the client can catch it
+    throw new Error('Failed to delete course and associated bookings.');
+  }
 }

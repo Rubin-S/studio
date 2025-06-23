@@ -9,7 +9,10 @@ import { deleteAllBookings } from '@/lib/bookings';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function deleteAllDataAction() {
-  await Promise.all([deleteAllCourses(), deleteAllBookings()]);
+  // Make deletion sequential to prevent potential race conditions
+  await deleteAllBookings();
+  await deleteAllCourses();
+
   revalidatePath('/admin/courses');
   revalidatePath('/admin/bookings');
   revalidatePath('/courses');
