@@ -67,7 +67,7 @@ export async function seedSampleDataAction() {
           id: carStep1,
           name: { en: 'Personal Details', ta: 'தனிப்பட்ட விபரங்கள்' },
           fields: [
-            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' } },
+            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' }, options: [] },
             { id: carField1, type: 'select', required: true, label: { en: 'Have LLR?', ta: 'LLR உள்ளதா?' }, placeholder: { en: 'Please select an option', ta: 'ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
           ],
            navigationRules: [
@@ -78,7 +78,7 @@ export async function seedSampleDataAction() {
           id: carStep2,
           name: { en: 'License Details', ta: 'உரிம விவரங்கள்' },
           fields: [
-            { id: uuidv4(), type: 'text', required: true, label: { en: "Learner's License Number", ta: 'பழகுநர் உரிம எண்' }, placeholder: { en: 'TN-32-A-12345', ta: 'TN-32-A-12345' } }
+            { id: uuidv4(), type: 'text', required: true, label: { en: "Learner's License Number", ta: 'பழகுநர் உரிம எண்' }, placeholder: { en: 'TN-32-A-12345', ta: 'TN-32-A-12345' }, options: [] }
           ],
           navigationRules: [],
         },
@@ -86,8 +86,8 @@ export async function seedSampleDataAction() {
           id: carStep3,
           name: { en: 'Contact Information', ta: 'தொடர்பு தகவல்' },
           fields: [
-            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' } },
-            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' } },
+            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' }, options: [] },
+            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' }, options: [] },
           ],
           navigationRules: [],
         }
@@ -121,9 +121,9 @@ export async function seedSampleDataAction() {
         id: uuidv4(),
         name: { en: 'Applicant Details', ta: 'விண்ணப்பதாரர் விவரங்கள்' },
         fields: [
-            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' } },
-            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' } },
-            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' } },
+            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' }, options: [] },
+            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' }, options: [] },
+            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' }, options: [] },
         ],
         navigationRules: []
       }]
