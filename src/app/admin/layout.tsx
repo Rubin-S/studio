@@ -5,28 +5,24 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Car, LogOut, UserCircle, ClipboardList, Settings } from 'lucide-react';
 import { Sidebar, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const { user, loading, logout } = useAuth();
 
     useEffect(() => {
-      // This check only runs on the client-side
-      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      if (loggedIn) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
+      // If auth is not loading and there's no user, redirect to login
+      if (!loading && !user) {
         router.replace('/login');
       }
-    }, [router]);
+    }, [user, loading, router]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('isLoggedIn');
-        router.push('/login');
+    const handleLogout = async () => {
+        await logout();
     };
 
     const navItems = [
@@ -37,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ];
 
     // While checking authentication, show a loading skeleton to prevent content flash
-    if (isAuthenticated === null) {
+    if (loading) {
         return (
             <div className="flex h-screen w-full">
                 {/* Sidebar Skeleton */}
@@ -72,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     
     // If not authenticated, the redirect is already in progress, so we return null
-    if (!isAuthenticated) {
+    if (!user) {
         return null;
     }
 
@@ -84,8 +80,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <div className="flex items-center gap-2 p-2">
                              <UserCircle className="h-10 w-10 text-primary" />
                             <div className="flex flex-col">
-                                <span className="text-sm font-semibold">Admin</span>
-                                <span className="text-xs text-muted-foreground">Senthil Murugan</span>
+                                <span className="text-sm font-semibold truncate">{user.email}</span>
+                                <span className="text-xs text-muted-foreground">Administrator</span>
                             </div>
                         </div>
                     </SidebarHeader>

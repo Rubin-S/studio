@@ -1,23 +1,29 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- Courses Collection ---
-    // Anyone can view courses.
-    // Writes are open so the admin panel's server actions can modify them.
-    // WARNING: This is insecure. In production, lock this down to authenticated admins.
+    // Courses are publicly readable by anyone
     match /courses/{courseId} {
       allow read: if true;
-      allow write: if true; // Should be: if request.auth != null;
+      
+      // IMPORTANT: This allows ANY authenticated user to create, update, or delete courses.
+      // For a production app, you should implement role-based access control
+      // (e.g., using Firebase custom claims) to restrict this to only admins.
+      allow write: if request.auth != null;
     }
-
-    // --- Bookings Collection ---
-    // All operations are allowed so server actions can create/read/delete bookings.
-    // WARNING: This is insecure. Reads and deletes should be admin-only.
+    
+    // Bookings are only accessible by authenticated users for management,
+    // but can be created by anyone.
     match /bookings/{bookingId} {
-      allow read, write: if true; // Should be granular (e.g., allow create: if true; allow read, delete: if request.auth != null)
+      // Admins can read all booking info.
+      allow read: if request.auth != null;
+
+      // Anyone can create a booking (submit the booking form).
+      allow create: if true;
+      
+      // Only admins can update or delete bookings.
+      allow update, delete: if request.auth != null;
     }
   }
 }

@@ -1,5 +1,6 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getAuth, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,26 +11,45 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
 let db: Firestore | null = null;
 
-function getDb() {
-  if (db) {
-    return db;
-  }
-
-  if (firebaseConfig.projectId && firebaseConfig.apiKey) {
-    try {
-      const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-      db = getFirestore(app);
-      return db;
-    } catch (error) {
-      console.error("Firebase initialization failed:", error);
-      return null;
+function getFirebaseApp() {
+    if (app) return app;
+    if (firebaseConfig.projectId && firebaseConfig.apiKey) {
+        try {
+            app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+            return app;
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            return null;
+        }
+    } else {
+        console.warn("Firebase config is missing, app will not be available.");
+        return null;
     }
-  } else {
-    console.warn("Firebase config is missing, database will not be available.");
-    return null;
-  }
 }
 
-export { getDb };
+
+function getDb() {
+  if (db) return db;
+  const firebaseApp = getFirebaseApp();
+  if (firebaseApp) {
+      db = getFirestore(firebaseApp);
+      return db;
+  }
+  return null;
+}
+
+function getFirebaseAuth() {
+  if (auth) return auth;
+  const firebaseApp = getFirebaseApp();
+  if (firebaseApp) {
+      auth = getAuth(firebaseApp);
+      return auth;
+  }
+  return null;
+}
+
+export { getDb, getFirebaseAuth };

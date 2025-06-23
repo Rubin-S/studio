@@ -8,55 +8,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Car, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { loginAction } from './actions';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading, login } = useAuth();
+  
+  const [email, setEmail] = useState('admin@smds.com');
+  const [password, setPassword] = useState('password');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // This effect runs on the client after the component mounts
-    if (localStorage.getItem('isLoggedIn') === 'true') {
+    // If user is already logged in, redirect to admin dashboard
+    if (!loading && user) {
       router.replace('/admin');
-    } else {
-      setIsLoading(false);
     }
-  }, [router]);
+  }, [user, loading, router]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const formData = new FormData(e.currentTarget);
-    const result = await loginAction(formData);
-
-    if (result.success) {
-      localStorage.setItem('isLoggedIn', 'true');
+    try {
+      await login(email, password);
       toast({
         title: "Login Successful",
         description: "Redirecting to admin dashboard...",
       });
       router.push('/admin');
-    } else {
+    } catch (err: any) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: result.error || "An unknown error occurred.",
+        description: "Invalid email or password.",
       });
       setIsSubmitting(false);
     }
   };
-
-  if (isLoading) {
+  
+  // Show loading state while auth is being checked or if a user session exists
+  if (loading || (!loading && user)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary">
         <p>Loading...</p>
       </div>
     );
   }
-
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary">
@@ -77,6 +75,8 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
               />
             </div>
@@ -87,6 +87,8 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isSubmitting}
               />
             </div>
