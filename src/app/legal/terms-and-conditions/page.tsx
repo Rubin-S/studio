@@ -25,7 +25,7 @@ export default function TermsAndConditionsPage() {
                 <CardTitle className="font-headline text-3xl text-primary text-center">Terms and Conditions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
-                 <p><strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                 <p><strong>Last Updated:</strong> August 1, 2024</p>
                 <p>Please read these terms and conditions carefully before using our service. This is a template and should be updated with your specific terms.</p>
 
                 <h2 className="text-xl font-semibold text-foreground pt-4">1. Agreement to Terms</h2>

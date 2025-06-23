@@ -25,7 +25,7 @@ export default function CancellationPolicyPage() {
                 <CardTitle className="font-headline text-3xl text-primary text-center">Cancellation and Refund Policy</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
-                <p><strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><strong>Last Updated:</strong> August 1, 2024</p>
                 <p>This is a template policy and should be updated to reflect your specific business practices.</p>
 
                 <h2 className="text-xl font-semibold text-foreground pt-4">1. Cancellation by Customer</h2>

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -13,42 +12,27 @@ import { format, addDays } from 'date-fns';
 import type { Course } from '@/lib/types';
 
 export async function deleteAllDataAction() {
-  console.log('---[DEBUG] Starting deleteAllDataAction---');
   try {
-    console.log('[DEBUG] Deleting all bookings...');
     await deleteAllBookings();
-    console.log('[DEBUG] All bookings deleted.');
-
-    console.log('[DEBUG] Deleting all courses...');
     await deleteAllCourses();
-    console.log('[DEBUG] All courses deleted.');
-
-    console.log('[DEBUG] Deleting all students...');
     await deleteAllStudents();
-    console.log('[DEBUG] All students deleted.');
 
-    console.log('[DEBUG] Revalidating paths after deletion...');
     revalidatePath('/admin/courses');
     revalidatePath('/admin/bookings');
     revalidatePath('/admin/students');
     revalidatePath('/courses');
     revalidatePath('/');
-    console.log('[DEBUG] Path revalidation complete.');
   } catch (error) {
-    console.error('---[DEBUG] A critical error occurred during deleteAllDataAction---', error);
+    console.error('A critical error occurred during deleteAllDataAction:', error);
     throw error;
   }
-  console.log('---[DEBUG] Finished deleteAllDataAction successfully---');
 }
 
 export async function seedSampleDataAction() {
-  console.log('---[DEBUG] Starting seedSampleDataAction---');
-
   try {
     await deleteAllDataAction();
-    console.log('[DEBUG] deleteAllDataAction completed successfully.');
   } catch (error) {
-      console.error('[DEBUG] CRITICAL: deleteAllDataAction failed. Aborting seed.', error);
+      console.error('CRITICAL: deleteAllDataAction failed. Aborting seed.', error);
       throw new Error("Seeding failed because data deletion failed. Check server logs.");
   }
 
@@ -175,33 +159,17 @@ export async function seedSampleDataAction() {
   };
 
   try {
-    console.log('[DEBUG] Preparing to seed: Comprehensive Car Training');
-    console.log('[DEBUG] Car course data:', JSON.stringify(carCourse, null, 2));
     await createCourse(carCourse);
-    console.log('[DEBUG] Seeding SUCCESS: Comprehensive Car Training');
-
-    console.log('[DEBUG] Preparing to seed: Two-Wheeler License');
-    console.log('[DEBUG] Bike course data:', JSON.stringify(bikeCourse, null, 2));
     await createCourse(bikeCourse);
-    console.log('[DEBUG] Seeding SUCCESS: Two-Wheeler License');
-    
-    console.log('[DEBUG] Preparing to seed: Free Theory Class');
-    console.log('[DEBUG] Theory course data:', JSON.stringify(theoryCourse, null, 2));
     await createCourse(theoryCourse);
-    console.log('[DEBUG] Seeding SUCCESS: Free Theory Class');
-
   } catch (error) {
-    console.error('---[DEBUG] A critical error occurred during the course creation phase of seeding---', error);
+    console.error('A critical error occurred during the course creation phase of seeding:', error);
     throw new Error("Seeding failed during course creation. Check server logs for which course failed and why.");
   }
 
 
-  console.log('[DEBUG] Revalidating paths after seeding...');
   revalidatePath('/admin/courses');
   revalidatePath('/admin/bookings');
   revalidatePath('/courses');
   revalidatePath('/');
-  console.log('[DEBUG] Path revalidation complete.');
-  
-  console.log('---[DEBUG] Finished seedSampleDataAction successfully---');
 }

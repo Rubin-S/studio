@@ -81,7 +81,7 @@ export default function ContactPage() {
                         style={{ border: 0 }}
                         allowFullScreen={true}
                         loading="lazy"
-                        title="Google Maps Location of Thiyagadurgam"
+                        title="Google Maps Location of Sri Senthil Murugan Driving School"
                       ></iframe>
                   </div>
                 </CardContent>
