@@ -3,10 +3,10 @@
 import { useLanguage } from '@/hooks/useLanguage';
 import type { Course } from '@/lib/types';
 import Image from 'next/image';
-import { CheckCircle, BookUser, Calendar, Youtube, Info, FileText, Download } from 'lucide-react';
+import { CheckCircle, Calendar, Youtube, Info, FileText, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import CourseBookingForm from './CourseBookingForm';
+import Link from 'next/link';
 
 type CourseDetailClientProps = {
   course: Course;
@@ -14,7 +14,7 @@ type CourseDetailClientProps = {
 
 export default function CourseDetailClient({ course }: CourseDetailClientProps) {
   const { t } = useLanguage();
-  const hasBookingSystem = course.slots?.length > 0;
+  const hasBookingSystem = course.slots?.length > 0 && course.slots.some(slot => !slot.bookedBy);
 
   return (
     <>
@@ -92,6 +92,24 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
             </CardContent>
           </Card>
 
+          {hasBookingSystem && (
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline text-2xl text-primary">
+                  <Calendar /> {t({ en: 'Book Your Slot', ta: 'உங்கள் இடத்தை முன்பதிவு செய்யுங்கள்' })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4 text-sm text-muted-foreground">{t({ en: 'Slots are available! Click the button below to go to the booking page.', ta: 'இடங்கள் உள்ளன! முன்பதிவுப் பக்கத்திற்குச் செல்ல, கீழே உள்ள பொத்தானைக் கிளிக் செய்யவும்.' })}</p>
+                <Button asChild className="w-full">
+                  <Link href={`/courses/${course.id}/book`}>
+                    {t({ en: 'Book Now', ta: 'இப்போதே முன்பதிவு செய்யவும்' })}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
             <Card>
               <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-headline text-2xl text-primary">
@@ -123,20 +141,6 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
           )}
         </div>
       </div>
-      
-      {hasBookingSystem && (
-        <div className="mt-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Book Your Slot', ta: 'உங்கள் இடத்தை முன்பதிவு செய்யுங்கள்' })}</CardTitle>
-              <p className="mt-2 text-center text-muted-foreground">{t({ en: 'Select an available time and fill out your details to reserve your spot.', ta: 'கிடைக்கும் நேரத்தைத் தேர்ந்தெடுத்து, உங்கள் இடத்தை முன்பதிவு செய்ய உங்கள் விவரங்களைப் பூர்த்தி செய்யவும்.'})}</p>
-            </CardHeader>
-            <CardContent>
-              <CourseBookingForm course={course} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </>
   );
 }
