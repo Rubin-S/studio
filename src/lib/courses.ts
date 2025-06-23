@@ -10,8 +10,23 @@ const handleDbError = (context: string) => {
 
 // Provides backward compatibility for courses created before the multi-step form feature
 const ensureRegistrationForm = (data: any): RegistrationForm => {
-    if (data.registrationForm && Array.isArray(data.registrationForm.steps) && data.registrationForm.steps.length > 0) {
-        return data.registrationForm;
+    if (data.registrationForm && Array.isArray(data.registrationForm.steps)) {
+        // Ensure steps is not empty for courses that should have a form
+        if (data.registrationForm.steps.length > 0) {
+            return data.registrationForm;
+        }
+        // Handle case where a course might have registrationForm: {steps: []} but should have one
+        if (data.price?.discounted > 0) {
+             return {
+                steps: [{
+                    id: uuidv4(),
+                    name: { en: 'Registration Details', ta: 'பதிவு விவரங்கள்' },
+                    fields: [],
+                    navigationRules: []
+                }]
+            };
+        }
+        return data.registrationForm; // Return the empty steps array for free/non-bookable courses
     }
     // If old structure `formFields` exists, migrate it
     if (Array.isArray(data.formFields)) {
@@ -26,12 +41,7 @@ const ensureRegistrationForm = (data: any): RegistrationForm => {
     }
     // Default empty structure
     return {
-        steps: [{
-            id: uuidv4(),
-            name: { en: 'Step 1', ta: 'படி 1' },
-            fields: [],
-            navigationRules: []
-        }]
+        steps: []
     };
 }
 
@@ -131,9 +141,9 @@ export async function createCourse(data: Omit<Course, 'id'>): Promise<Course> {
   }
   try {
     const coursesCollection = collection(db, 'courses');
-    // Remove the old formFields if it exists, to avoid data duplication
-    const { formFields, ...restData } = data as any;
-    const docRef = await addDoc(coursesCollection, restData);
+    // Sanitize data for Firestore by removing undefined values, which can cause errors.
+    const courseData = JSON.parse(JSON.stringify(data));
+    const docRef = await addDoc(coursesCollection, courseData);
     return { id: docRef.id, ...data };
   } catch (error) {
     console.error("[DB] Error creating course. This might be due to Firestore security rules. Please ensure your rules allow write access.", error);
@@ -150,9 +160,9 @@ export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>
   try {
     const docRef = doc(db, 'courses', id);
     if (Object.keys(data).length > 0) {
-      // Remove the old formFields if it exists, to avoid data duplication
-      const { formFields, ...restData } = data as any;
-      await updateDoc(docRef, restData);
+      // Sanitize data for Firestore
+      const courseData = JSON.parse(JSON.stringify(data));
+      await updateDoc(docRef, courseData);
     }
     return await getCourseById(id);
   } catch (error) {
