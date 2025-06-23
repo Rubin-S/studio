@@ -3,12 +3,12 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getAuth, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC5cc0x0sqatUH_llMlJj19KtgPpCJR-Q4",
-  authDomain: "smds-2025-bbf18.firebaseapp.com",
-  projectId: "smds-2025-bbf18",
-  storageBucket: "smds-2025-bbf18.firebasestorage.app",
-  messagingSenderId: "496888994029",
-  appId: "1:496888994029:web:2cca2e24f840f3386754e4",
+  apiKey: process.env.NEXT_PUBLIC_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_APP_ID,
 };
 
 let app: FirebaseApp | null = null;
