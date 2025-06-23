@@ -153,9 +153,39 @@ export async function seedSampleDataAction() {
     slots: [], // No slots to book
   };
 
-  await createCourse(carCourse);
-  await createCourse(bikeCourse);
-  await createCourse(theoryCourse);
+  try {
+    try {
+      console.log("Seeding: Attempting to create car course...");
+      await createCourse(carCourse);
+      console.log("Seeding: Car course created successfully.");
+    } catch (error) {
+      console.error("CRITICAL: Failed to create 'Comprehensive Car Training' course.", error);
+      throw error;
+    }
+
+    try {
+      console.log("Seeding: Attempting to create bike course...");
+      await createCourse(bikeCourse);
+      console.log("Seeding: Bike course created successfully.");
+    } catch (error) {
+      console.error("CRITICAL: Failed to create 'Two-Wheeler License' course.", error);
+      throw error;
+    }
+    
+    try {
+      console.log("Seeding: Attempting to create theory course...");
+      await createCourse(theoryCourse);
+      console.log("Seeding: Theory course created successfully.");
+    } catch (error) {
+      console.error("CRITICAL: Failed to create 'Free Theory Class' course.", error);
+      throw error;
+    }
+
+  } catch (error) {
+    // This top-level catch will re-throw the specific error from the inner blocks.
+    console.error("Seeding process failed. See specific course error above.");
+    throw new Error("Seeding failed. Check server logs for details.");
+  }
 
 
   revalidatePath('/admin/courses');
