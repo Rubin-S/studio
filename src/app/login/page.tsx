@@ -38,10 +38,21 @@ export default function LoginPage() {
       });
       router.push('/admin');
     } catch (err: any) {
+      let description = "An unknown error occurred. Please try again.";
+      
+      if (err.code === 'auth/invalid-credential') {
+        description = "Invalid email or password. Please double-check and try again.";
+      } else if (err.message === 'Auth not initialized') {
+        description = "Authentication service could not be reached. Please ensure Firebase is configured correctly.";
+      } else if (err.code) {
+        // For other Firebase or network errors
+        description = `An unexpected error occurred. Please try again later. (Code: ${err.code})`;
+      }
+
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid email or password.",
+        description: description,
       });
       setIsSubmitting(false);
     }
