@@ -68,7 +68,7 @@ export async function seedSampleDataAction() {
           name: { en: 'Personal Details', ta: 'தனிப்பட்ட விபரங்கள்' },
           fields: [
             { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' } },
-            { id: carField1, type: 'select', required: true, label: { en: 'Have LLR?', ta: 'LLR உள்ளதா?' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
+            { id: carField1, type: 'select', required: true, label: { en: 'Have LLR?', ta: 'LLR உள்ளதா?' }, placeholder: { en: 'Please select an option', ta: 'ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
           ],
            navigationRules: [
             { fieldId: carField1, value: 'No', nextStepId: carStep3 }
