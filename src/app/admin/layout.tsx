@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Car, LogOut, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, UserCircle, ClipboardList } from 'lucide-react';
 import { Sidebar, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -32,6 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const navItems = [
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/admin/courses', label: 'Courses', icon: Car },
+        { href: '/admin/bookings', label: 'Bookings', icon: ClipboardList },
     ];
 
     // While checking authentication, show a loading skeleton to prevent content flash
@@ -48,6 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </div>
                     </div>
                     <div className="mt-8 flex flex-col gap-2">
+                        <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
                     </div>

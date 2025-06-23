@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car, Users, BarChart, PlusCircle } from "lucide-react";
+import { Car, Users, BarChart, PlusCircle, ClipboardList } from "lucide-react";
 import Link from 'next/link';
 import { getCourses } from "@/lib/courses";
+import { getBookings } from "@/lib/bookings";
 
 export default async function AdminDashboard() {
   const courses = await getCourses();
+  const bookings = await getBookings();
 
   return (
     <div className="space-y-8">
@@ -27,22 +29,22 @@ export default async function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bookings.length}</div>
+            <p className="text-xs text-muted-foreground">Across all courses</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Website Visits</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+2,350</div>
             <p className="text-xs text-muted-foreground">+180.1% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Course Page Views</CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+1,200</div>
-            <p className="text-xs text-muted-foreground">+19% from last month</p>
           </CardContent>
         </Card>
       </div>
@@ -59,9 +61,14 @@ export default async function AdminDashboard() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Add New Course
               </Link>
             </Button>
-             <Button asChild variant="outline">
+            <Button asChild variant="outline">
               <Link href="/admin/courses">
                 <Car className="mr-2 h-4 w-4" /> Manage Courses
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/bookings">
+                <ClipboardList className="mr-2 h-4 w-4" /> View Bookings
               </Link>
             </Button>
           </CardContent>
@@ -73,7 +80,7 @@ export default async function AdminDashboard() {
           <CardHeader>
             <CardTitle className="font-headline">Analytics Integration</CardTitle>
             <CardDescription>For more detailed analytics, connect your Google Analytics account.</CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent>
             <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 p-8 text-center">
               <div>

@@ -3,49 +3,68 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { createCourse, updateCourse, deleteCourse } from '@/lib/courses';
+import { v4 as uuidv4 } from 'uuid';
+
+const localizedStringSchema = z.object({
+  en: z.string().min(1, 'English value is required'),
+  ta: z.string().min(1, 'Tamil value is required'),
+});
+
+const formFieldSchema = z.object({
+  id: z.string(),
+  type: z.enum(['text', 'email', 'tel', 'textarea', 'select']),
+  label: localizedStringSchema,
+  placeholder: localizedStringSchema.optional(),
+  required: z.boolean(),
+  options: z.array(localizedStringSchema).optional(),
+});
+
+const courseSlotSchema = z.object({
+  id: z.string(),
+  dateTime: z.string().min(1, 'Date and time is required'),
+  bookedBy: z.object({
+    name: z.string(),
+    bookingId: z.string(),
+  }).nullable(),
+});
 
 const formSchema = z.object({
-  title: z.object({
-    en: z.string().min(1, 'English title is required'),
-    ta: z.string().min(1, 'Tamil title is required'),
-  }),
+  title: localizedStringSchema,
   thumbnail: z.string().url('Must be a valid URL'),
-  shortDescription: z.object({
-    en: z.string().min(1, 'English short description is required'),
-    ta: z.string().min(1, 'Tamil short description is required'),
-  }),
-  detailedDescription: z.object({
-    en: z.string().min(1, 'English detailed description is required'),
-    ta: z.string().min(1, 'Tamil detailed description is required'),
-  }),
-  whatWeOffer: z.array(z.object({
-    en: z.string().min(1, 'English feature is required'),
-    ta: z.string().min(1, 'Tamil feature is required'),
-  })),
+  shortDescription: localizedStringSchema,
+  detailedDescription: localizedStringSchema,
+  whatWeOffer: z.array(localizedStringSchema),
   price: z.object({
     original: z.coerce.number().min(0),
     discounted: z.coerce.number().min(0),
   }),
-  instructions: z.object({
-    en: z.string().min(1, 'English instructions are required'),
-    ta: z.string().min(1, 'Tamil instructions are required'),
-  }),
+  instructions: localizedStringSchema,
   youtubeLink: z.string().url().optional().or(z.literal('')),
   documentUrl: z.string().url().optional().or(z.literal('')),
-  googleCalendarLink: z.string().url().optional().or(z.literal('')),
-  googleFormLink: z.string().url().optional().or(z.literal('')),
+  formFields: z.array(formFieldSchema),
+  slots: z.array(courseSlotSchema),
 });
 
 export async function createCourseAction(data: z.infer<typeof formSchema>) {
   const validatedData = formSchema.parse(data);
-  await createCourse(validatedData);
+  const dataWithIds = {
+    ...validatedData,
+    formFields: validatedData.formFields.map(field => ({ ...field, id: field.id || uuidv4() })),
+    slots: validatedData.slots.map(slot => ({ ...slot, id: slot.id || uuidv4(), bookedBy: null })),
+  };
+  await createCourse(dataWithIds);
   revalidatePath('/admin/courses');
   revalidatePath('/courses');
 }
 
 export async function updateCourseAction(id: string, data: z.infer<typeof formSchema>) {
   const validatedData = formSchema.parse(data);
-  await updateCourse(id, validatedData);
+  const dataWithIds = {
+    ...validatedData,
+    formFields: validatedData.formFields.map(field => ({ ...field, id: field.id || uuidv4() })),
+    slots: validatedData.slots.map(slot => ({ ...slot, id: slot.id || uuidv4() })),
+  };
+  await updateCourse(id, dataWithIds);
   revalidatePath('/admin/courses');
   revalidatePath(`/courses/${id}`);
   revalidatePath('/courses');
@@ -56,4 +75,5 @@ export async function deleteCourseAction(id: string) {
   await deleteCourse(id);
   revalidatePath('/admin/courses');
   revalidatePath('/courses');
+  revalidatePath('/admin/bookings');
 }

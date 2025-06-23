@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { CheckCircle, BookUser, Calendar, Youtube, Info, FileText, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import CourseBookingForm from './CourseBookingForm';
 
 type CourseDetailClientProps = {
   course: Course;
@@ -13,6 +14,7 @@ type CourseDetailClientProps = {
 
 export default function CourseDetailClient({ course }: CourseDetailClientProps) {
   const { t } = useLanguage();
+  const hasBookingSystem = course.slots?.length > 0;
 
   return (
     <>
@@ -122,38 +124,19 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
         </div>
       </div>
       
-      <div className="mt-8">
-          <h2 className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Book Your Slot', ta: 'உங்கள் இடத்தை முன்பதிவு செய்யுங்கள்' })}</h2>
-          <p className="mt-2 text-center text-muted-foreground">{t({ en: '1. Select an available date and time below.', ta: '1. கீழே கிடைக்கும் தேதி மற்றும் நேரத்தைத் தேர்ந்தெடுக்கவும்.'})}</p>
-          <p className="text-center text-muted-foreground">{t({ en: '2. After selecting, fill out the registration form.', ta: '2. தேர்ந்தெடுத்த பிறகு, பதிவுப் படிவத்தைப் பூர்த்தி செய்யவும்.'})}</p>
-
-          <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-              {course.googleCalendarLink && (
-                  <Card>
-                      <CardHeader>
-                          <CardTitle className="flex items-center gap-2 font-headline text-xl text-primary"><Calendar /> {t({ en: 'Step 1: Select a Slot', ta: 'படி 1: ஒரு இடத்தைத் தேர்ந்தெடுக்கவும்' })}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                          <div className="aspect-square w-full overflow-hidden rounded-lg">
-                              <iframe src={course.googleCalendarLink} style={{border:0}} width="100%" height="100%" frameBorder="0" scrolling="no" title="Booking Calendar"></iframe>
-                          </div>
-                      </CardContent>
-                  </Card>
-              )}
-              {course.googleFormLink && (
-                  <Card>
-                      <CardHeader>
-                          <CardTitle className="flex items-center gap-2 font-headline text-xl text-primary"><BookUser /> {t({ en: 'Step 2: Register Your Details', ta: 'படி 2: உங்கள் விவரங்களைப் பதிவு செய்யவும்' })}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                          <div className="aspect-square w-full overflow-hidden rounded-lg">
-                              <iframe src={course.googleFormLink} width="100%" height="100%" frameBorder="0" marginHeight={0} marginWidth={0} title="Registration Form">Loading…</iframe>
-                          </div>
-                      </CardContent>
-                  </Card>
-              )}
-          </div>
-      </div>
+      {hasBookingSystem && (
+        <div className="mt-12">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Book Your Slot', ta: 'உங்கள் இடத்தை முன்பதிவு செய்யுங்கள்' })}</CardTitle>
+              <p className="mt-2 text-center text-muted-foreground">{t({ en: 'Select an available time and fill out your details to reserve your spot.', ta: 'கிடைக்கும் நேரத்தைத் தேர்ந்தெடுத்து, உங்கள் இடத்தை முன்பதிவு செய்ய உங்கள் விவரங்களைப் பூர்த்தி செய்யவும்.'})}</p>
+            </CardHeader>
+            <CardContent>
+              <CourseBookingForm course={course} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </>
   );
 }
