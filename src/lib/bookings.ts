@@ -175,20 +175,6 @@ export async function deleteAllBookings(): Promise<{ success: boolean }> {
         throw new Error("Database not initialized.");
     }
     try {
-        // Reset bookedBy in all slots of all courses first
-        const coursesCollection = collection(db, 'courses');
-        const coursesSnapshot = await getDocs(coursesCollection);
-        const courseBatch = writeBatch(db);
-        coursesSnapshot.forEach(courseDoc => {
-            const courseData = courseDoc.data();
-            if (courseData.slots && Array.isArray(courseData.slots)) {
-                const updatedSlots = courseData.slots.map((slot: any) => ({ ...slot, bookedBy: null }));
-                courseBatch.update(courseDoc.ref, { slots: updatedSlots });
-            }
-        });
-        await courseBatch.commit();
-        
-        // Now delete all bookings
         const bookingsCollection = collection(db, 'bookings');
         const bookingsSnapshot = await getDocs(bookingsCollection);
          if (bookingsSnapshot.empty) {

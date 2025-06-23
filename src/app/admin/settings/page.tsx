@@ -100,7 +100,7 @@ export default function SettingsPage() {
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete all
-                  courses and bookings from your database.
+                  courses, bookings, and student records from your database.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -115,14 +115,33 @@ export default function SettingsPage() {
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button
-            variant="outline"
-            onClick={handleSeed}
-            disabled={isSeeding}
-          >
-            <DatabaseZap className="mr-2" />
-            {isSeeding ? 'Seeding...' : 'Seed Sample Data'}
-          </Button>
+          <AlertDialog>
+             <AlertDialogTrigger asChild>
+                <Button
+                    variant="outline"
+                    disabled={isSeeding}
+                >
+                    <DatabaseZap className="mr-2" />
+                    {isSeeding ? 'Seeding...' : 'Seed Sample Data'}
+                </Button>
+            </AlertDialogTrigger>
+             <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                    This will delete all existing data and replace it with sample course data. Any custom courses you've created will be lost.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                    onClick={handleSeed}
+                    >
+                    Yes, wipe and seed
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>
