@@ -74,7 +74,7 @@ export default function CourseBookingForm({ course }: CourseBookingFormProps) {
     }
   };
 
-  const availableSlots = course.slots.filter(slot => !slot.bookedBy);
+  const availableSlots = course.slots.filter(slot => !slot.bookedBy && slot.dateTime);
 
   if (isSubmitted) {
     return (
@@ -146,6 +146,7 @@ export default function CourseBookingForm({ course }: CourseBookingFormProps) {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>{t(formField.label)}{formField.required && '*'}</FormLabel>
+
                                 <FormControl>
                                     {formField.type === 'textarea' ? (
                                         <Textarea placeholder={t(formField.placeholder)} {...field} />
