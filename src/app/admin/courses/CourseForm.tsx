@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFieldArray, useForm, type Control } from 'react-hook-form';
+import { useFieldArray, useForm, type Control, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,6 +25,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 
 const localizedStringSchema = z.object({
   en: z.string().min(1, 'English value is required'),
