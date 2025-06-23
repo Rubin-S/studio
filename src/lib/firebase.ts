@@ -18,8 +18,6 @@ let db: Firestore | null = null;
 function getFirebaseApp() {
     if (app) return app;
     if (firebaseConfig.projectId && firebaseConfig.apiKey) {
-        // Log the config for debugging purposes
-        console.log("Attempting to initialize Firebase with config:", firebaseConfig);
         try {
             app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
             return app;
