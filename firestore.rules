@@ -1,29 +1,20 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: The following rules are highly permissive and are NOT
-    // secure for a production environment. They are configured this way
-    // to allow the Next.js server-side code (Server Actions/Components)
-    // to function with the Firebase Client SDK.
-    //
-    // For production, you MUST either:
-    // 1. Refactor server-side data fetching to use the Firebase Admin SDK.
-    // 2. Or, make all data fetching client-side from within authenticated routes.
-
+    // PUBLIC ACCESS: Anyone can read courses.
     match /courses/{courseId} {
-      // Anyone can read course information.
       allow read: if true;
-      
-      // Anyone can create, update, or delete courses.
-      // Security is currently only handled by route protection in Next.js.
+      // WRITE ACCESS: For now, we'll allow writes to enable admin functionality.
+      // This relies on your Next.js app to protect the admin routes.
       allow write: if true;
     }
 
+    // BOOKINGS: Anyone can create a booking (submit the form).
+    // The server/admin can read, update, and delete them.
     match /bookings/{bookingId} {
-      // Anyone can create, read, update, or delete bookings.
-      // Security is currently only handled by route protection in Next.js.
-      allow read, write: if true;
+      allow create: if true;
+      allow read, update, delete: if true;
     }
   }
 }

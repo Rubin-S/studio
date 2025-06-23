@@ -224,3 +224,12 @@ INFO: Detected non-HTTP/2 connection.
 [debug] [2025-06-23T09:12:34.123Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules 200
 [debug] [2025-06-23T09:12:34.123Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules {}
 [info] ✔  firestore: Rules updated. 
+[info] i  firestore: Change detected, updating rules... 
+[debug] [2025-06-23T09:14:06.526Z] >>> [apiv2][query] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules [none]
+[debug] [2025-06-23T09:14:06.526Z] >>> [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules {"ignore_errors":true,"rules":{"files":[{"name":"security.rules","content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    // PUBLIC ACCESS: Anyone can read courses.\n    match /courses/{courseId} {\n      allow read: if true;\n      // WRITE ACCESS: For now, we'll allow writes to enable admin functionality.\n      // This relies on your Next.js app to protect the admin routes.\n      allow write: if true;\n    }\n\n    // BOOKINGS: Anyone can create a booking (submit the form).\n    // The server/admin can read, update, and delete them.\n    match /bookings/{bookingId} {\n      allow create: if true;\n      allow read, update, delete: if true;\n    }\n  }\n}\n"}]}}
+[debug] [2025-06-23T09:14:06.556Z] Jun 23, 2025 9:14:06 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jun 23, 2025 9:14:06 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2025-06-23T09:14:06.639Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules 200
+[debug] [2025-06-23T09:14:06.645Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules {}
+[info] ✔  firestore: Rules updated. 
