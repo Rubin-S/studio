@@ -62,7 +62,7 @@ export async function getBookingsByUserId(userId: string): Promise<Booking[]> {
   if (!userId) return [];
   try {
     const bookingsCollection = collection(db, 'bookings');
-    const q = query(bookingsCollection, where('userId', '==', userId), orderBy('submittedAt', 'desc'));
+    const q = query(bookingsCollection, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
 
     const bookings: Booking[] = [];
@@ -91,6 +91,10 @@ export async function getBookingsByUserId(userId: string): Promise<Booking[]> {
         };
         bookings.push(booking);
     });
+    
+    // Sort manually since we removed it from the query to avoid needing a composite index
+    bookings.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+
     return bookings;
   } catch (error) {
     console.error(`[DB] Error fetching bookings for user ${userId}.`, error);
