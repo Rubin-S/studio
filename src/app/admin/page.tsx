@@ -80,7 +80,7 @@ export default async function AdminDashboard() {
           <CardHeader>
             <CardTitle className="font-headline">Analytics Integration</CardTitle>
             <CardDescription>For more detailed analytics, connect your Google Analytics account.</CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent>
             <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 p-8 text-center">
               <div>
