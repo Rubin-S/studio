@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -6,6 +7,7 @@ import {
   createCourse,
 } from '@/lib/courses';
 import { deleteAllBookings } from '@/lib/bookings';
+import { deleteAllStudents } from '@/lib/students';
 import { v4 as uuidv4 } from 'uuid';
 import { format, addDays } from 'date-fns';
 
@@ -13,6 +15,7 @@ export async function deleteAllDataAction() {
   // Make deletion sequential to prevent potential race conditions
   await deleteAllBookings();
   await deleteAllCourses();
+  await deleteAllStudents();
 
   revalidatePath('/admin/courses');
   revalidatePath('/admin/bookings');
