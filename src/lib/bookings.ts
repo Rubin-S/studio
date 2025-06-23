@@ -57,20 +57,21 @@ export async function getBookingsByUserId(userId: string): Promise<Booking[]> {
     const querySnapshot = await getDocs(q);
     const bookings = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        return {
+        const booking: Booking = {
             id: doc.id,
-            userId: data.userId,
-            courseId: data.courseId,
-            courseTitle: data.courseTitle,
-            slotId: data.slotId,
-            slotDate: data.slotDate,
-            slotStartTime: data.slotStartTime,
-            slotEndTime: data.slotEndTime,
-            formData: data.formData,
-            submittedAt: data.submittedAt,
-            transactionId: data.transactionId,
-            paymentVerified: data.paymentVerified,
-        } as Booking;
+            userId: data.userId || '',
+            courseId: data.courseId || '',
+            courseTitle: data.courseTitle || 'Unknown Course',
+            slotId: data.slotId || '',
+            slotDate: data.slotDate || 'N/A',
+            slotStartTime: data.slotStartTime || 'N/A',
+            slotEndTime: data.slotEndTime || 'N/A',
+            formData: data.formData && typeof data.formData === 'object' ? data.formData : {},
+            submittedAt: data.submittedAt || new Date(0).toISOString(),
+            transactionId: data.transactionId || '',
+            paymentVerified: data.paymentVerified === true,
+        };
+        return booking;
     });
     return bookings;
   } catch (error) {
