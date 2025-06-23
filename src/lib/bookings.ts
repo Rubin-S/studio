@@ -18,7 +18,19 @@ export async function getBookings(): Promise<Booking[]> {
     const bookingsCollection = collection(db, 'bookings');
     const q = query(bookingsCollection, orderBy('submittedAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    const bookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+    const bookings = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        const booking: Booking = {
+            id: doc.id,
+            courseId: data.courseId || '',
+            courseTitle: data.courseTitle || 'Unknown Course',
+            slotId: data.slotId || '',
+            slotDateTime: data.slotDateTime || new Date(0).toISOString(),
+            formData: data.formData && typeof data.formData === 'object' ? data.formData : {},
+            submittedAt: data.submittedAt || new Date(0).toISOString(),
+        };
+        return booking;
+    });
     return bookings;
   } catch (error) {
     console.error("[DB] Error fetching bookings. This might be due to Firestore security rules.", error);

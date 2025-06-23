@@ -17,7 +17,29 @@ export async function getCourses(): Promise<Course[]> {
   try {
     const coursesCollection = collection(db, 'courses');
     const querySnapshot = await getDocs(coursesCollection);
-    const courses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+    
+    const courses = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      // Data validation and providing default values to prevent render crashes
+      const course: Course = {
+        id: doc.id,
+        title: data.title || { en: 'Untitled Course', ta: 'பெயரிடப்படாத படிப்பு' },
+        thumbnail: data.thumbnail || 'https://placehold.co/600x400.png',
+        shortDescription: data.shortDescription || { en: '', ta: '' },
+        detailedDescription: data.detailedDescription || { en: '', ta: '' },
+        whatWeOffer: Array.isArray(data.whatWeOffer) ? data.whatWeOffer : [],
+        price: data.price && typeof data.price.original === 'number' && typeof data.price.discounted === 'number'
+          ? data.price
+          : { original: 0, discounted: 0 },
+        instructions: data.instructions || { en: '', ta: '' },
+        youtubeLink: data.youtubeLink || '',
+        documentUrl: data.documentUrl || '',
+        formFields: Array.isArray(data.formFields) ? data.formFields : [],
+        slots: Array.isArray(data.slots) ? data.slots : [],
+      };
+      return course;
+    });
+
     return courses;
   } catch (error) {
     console.error("[DB] Error fetching courses. This might be due to Firestore security rules.", error);
@@ -37,7 +59,25 @@ export async function getCourseById(id: string): Promise<Course | undefined> {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as Course;
+      const data = docSnap.data();
+      // Also apply validation here for consistency
+      const course: Course = {
+        id: docSnap.id,
+        title: data.title || { en: 'Untitled Course', ta: 'பெயரிடப்படாத படிப்பு' },
+        thumbnail: data.thumbnail || 'https://placehold.co/600x400.png',
+        shortDescription: data.shortDescription || { en: '', ta: '' },
+        detailedDescription: data.detailedDescription || { en: '', ta: '' },
+        whatWeOffer: Array.isArray(data.whatWeOffer) ? data.whatWeOffer : [],
+        price: data.price && typeof data.price.original === 'number' && typeof data.price.discounted === 'number'
+          ? data.price
+          : { original: 0, discounted: 0 },
+        instructions: data.instructions || { en: '', ta: '' },
+        youtubeLink: data.youtubeLink || '',
+        documentUrl: data.documentUrl || '',
+        formFields: Array.isArray(data.formFields) ? data.formFields : [],
+        slots: Array.isArray(data.slots) ? data.slots : [],
+      };
+      return course;
     }
     return undefined;
   } catch (error) {
