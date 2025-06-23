@@ -18,6 +18,8 @@ let db: Firestore | null = null;
 function getFirebaseApp() {
     if (app) return app;
     if (firebaseConfig.projectId && firebaseConfig.apiKey) {
+        // Log the config for debugging purposes
+        console.log("Attempting to initialize Firebase with config:", firebaseConfig);
         try {
             app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
             return app;
@@ -26,7 +28,10 @@ function getFirebaseApp() {
             return null;
         }
     } else {
-        console.warn("Firebase config is missing, app will not be available.");
+        console.warn("Firebase config is missing or incomplete, app will not be available.", {
+            projectId: !!firebaseConfig.projectId,
+            apiKey: !!firebaseConfig.apiKey
+        });
         return null;
     }
 }
