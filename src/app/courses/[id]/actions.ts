@@ -30,8 +30,11 @@ export async function submitBookingAction(
     const allFields = course.registrationForm.steps.flatMap(step => step.fields);
 
     for (const key in formData) {
-      // The key is `${field.id}-${language}`. We want to find the original field label.
-      const fieldId = key.split('-')[0];
+      // The key is `${field.id}-${language}`. A UUID (field.id) can contain hyphens.
+      const parts = key.split('-');
+      parts.pop(); // Remove the language code ('en' or 'ta')
+      const fieldId = parts.join('-'); // Re-join the UUID parts
+      
       const formField = allFields.find(f => f.id === fieldId);
       
       // We'll use the English label as the consistent key in the database.
