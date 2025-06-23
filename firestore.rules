@@ -2,19 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // PUBLIC ACCESS: Anyone can read courses.
-    match /courses/{courseId} {
-      allow read: if true;
-      // WRITE ACCESS: For now, we'll allow writes to enable admin functionality.
-      // This relies on your Next.js app to protect the admin routes.
-      allow write: if true;
-    }
-
-    // BOOKINGS: Anyone can create a booking (submit the form).
-    // The server/admin can read, update, and delete them.
-    match /bookings/{bookingId} {
-      allow create: if true;
-      allow read, update, delete: if true;
+    // WARNING: These rules are insecure and are for development purposes only.
+    // They allow any authenticated user to read and write to any collection.
+    // Before deploying to production, you must secure your database.
+    // See https://firebase.google.com/docs/firestore/security/get-started
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
