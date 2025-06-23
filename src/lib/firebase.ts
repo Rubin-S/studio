@@ -17,10 +17,6 @@ let db: Firestore | null = null;
 
 function getFirebaseApp() {
     if (app) return app;
-    
-    // This console log will show you the exact values being used.
-    // Check your terminal after restarting the server.
-    console.log('Attempting to initialize Firebase with config:', firebaseConfig);
 
     if (firebaseConfig.projectId && firebaseConfig.apiKey) {
         try {
