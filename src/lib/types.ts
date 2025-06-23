@@ -1,3 +1,4 @@
+
 export type LocalizedString = {
   en: string;
   ta: string;
@@ -56,6 +57,13 @@ export type Course = {
   documentUrl?: string;
   registrationForm: RegistrationForm;
   slots: CourseSlot[];
+};
+
+export type Student = {
+  uid: string;
+  email: string;
+  displayName: string;
+  createdAt: string; // ISO 8601 format
 };
 
 export type Booking = {
