@@ -1,6 +1,6 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Course } from './types';
-import { db } from './firebase';
+import { getDb } from './firebase';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const handleDbError = (context: string) => {
@@ -9,6 +9,7 @@ const handleDbError = (context: string) => {
 
 export async function getCourses(): Promise<Course[]> {
   noStore();
+  const db = getDb();
   if (!db) {
     handleDbError("Fetching courses");
     return [];
@@ -26,6 +27,7 @@ export async function getCourses(): Promise<Course[]> {
 
 export async function getCourseById(id: string): Promise<Course | undefined> {
   noStore();
+  const db = getDb();
   if (!db) {
     handleDbError(`Fetching course with ID ${id}`);
     return undefined;
@@ -45,6 +47,7 @@ export async function getCourseById(id: string): Promise<Course | undefined> {
 }
 
 export async function createCourse(data: Omit<Course, 'id'>): Promise<Course> {
+  const db = getDb();
   if (!db) {
     handleDbError("Creating course");
     throw new Error("Database not initialized.");
@@ -60,6 +63,7 @@ export async function createCourse(data: Omit<Course, 'id'>): Promise<Course> {
 }
 
 export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>): Promise<Course | undefined> {
+  const db = getDb();
   if (!db) {
     handleDbError(`Updating course with ID ${id}`);
     throw new Error("Database not initialized.");
@@ -81,6 +85,7 @@ export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>
 }
 
 export async function deleteCourse(id: string): Promise<{ success: boolean }> {
+  const db = getDb();
   if (!db) {
     handleDbError(`Deleting course with ID ${id}`);
     throw new Error("Database not initialized.");

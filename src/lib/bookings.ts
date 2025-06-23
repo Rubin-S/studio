@@ -1,6 +1,6 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Booking } from './types';
-import { db } from './firebase';
+import { getDb } from './firebase';
 import { collection, getDocs, query, orderBy, doc, runTransaction } from 'firebase/firestore';
 
 const handleDbError = (context: string) => {
@@ -9,6 +9,7 @@ const handleDbError = (context: string) => {
 
 export async function getBookings(): Promise<Booking[]> {
   noStore();
+  const db = getDb();
   if (!db) {
     handleDbError("Fetching bookings");
     return [];
@@ -32,6 +33,7 @@ export async function createBooking(
   slotDateTime: string,
   formData: { [key: string]: string }
 ): Promise<{ success: boolean; bookingId?: string; error?: string }> {
+    const db = getDb();
     if (!db) {
         handleDbError("Creating booking");
         return { success: false, error: "Database not initialized." };
