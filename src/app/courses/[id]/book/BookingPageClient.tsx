@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import type { Course, FormField as FormFieldType } from '@/lib/types';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -62,7 +62,8 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>(undefined);
-
+  const [showPayment, setShowPayment] = useState(false);
+  
   const { registrationForm } = course;
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
@@ -109,6 +110,8 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     mode: 'onChange'
   });
 
+  const isFinalStep = currentStepIndex === registrationForm.steps.length - 1;
+
   const handleNextStep = async () => {
     const currentStep = registrationForm.steps[currentStepIndex];
     const fieldNamesToValidate = currentStep.fields.map(f => `${f.id}-${language}`);
@@ -119,6 +122,11 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
       return;
     }
 
+    if (isFinalStep) {
+        setShowPayment(true);
+        return;
+    }
+    
     let nextStepIndex = currentStepIndex + 1;
     
     // Check conditional navigation rules
@@ -165,6 +173,61 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     }
   };
 
+  if (showPayment) {
+    const selectedSlot = course.slots.find(s => s.id === selectedSlotId);
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Confirm Your Booking', ta: 'உங்கள் முன்பதிவை உறுதிப்படுத்தவும்' })}</CardTitle>
+                <CardDescription className="text-center">{t({ en: 'Review your details and complete the payment.', ta: 'உங்கள் விவரங்களை மதிப்பாய்வு செய்து பணம் செலுத்துவதை முடிக்கவும்.' })}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="rounded-lg border p-4 space-y-4">
+                    <h3 className="font-semibold text-lg">{t(course.title)}</h3>
+                    {selectedSlot && (
+                        <div className="text-muted-foreground text-sm space-y-1">
+                            <p><strong>{t({ en: 'Date', ta: 'தேதி' })}:</strong> {format(parseISO(selectedSlot.date), 'PPP')}</p>
+                            <p><strong>{t({ en: 'Time', ta: 'நேரம்' })}:</strong> {selectedSlot.startTime} - {selectedSlot.endTime}</p>
+                        </div>
+                    )}
+                </div>
+                <div className="rounded-lg border p-4 space-y-2">
+                    <h3 className="font-semibold text-lg">{t({ en: 'Payment Summary', ta: 'கட்டண சுருக்கம்' })}</h3>
+                    <div className="flex justify-between text-muted-foreground">
+                        <span>{t({ en: 'Original Price', ta: 'அசல் விலை' })}</span>
+                        <span>₹{course.price.original.toLocaleString('en-IN')}</span>
+                    </div>
+                     <div className="flex justify-between text-muted-foreground">
+                        <span>{t({ en: 'Discount', ta: 'தள்ளுபடி' })}</span>
+                        <span>- ₹{(course.price.original - course.price.discounted).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg text-primary">
+                        <span>{t({ en: 'Amount to Pay', ta: 'செலுத்த வேண்டிய தொகை' })}</span>
+                        <span>₹{course.price.discounted.toLocaleString('en-IN')}</span>
+                    </div>
+                </div>
+                
+                <Alert>
+                  <Terminal className="h-4 w-4" />
+                  <AlertTitle>{t({ en: 'Demo Payment', ta: 'டெமோ கட்டணம்' })}</AlertTitle>
+                  <AlertDescription>
+                    {t({ en: 'This is a demo. No real payment will be processed. Click "Confirm & Pay" to complete your booking.', ta: 'இது ஒரு டெமோ. உண்மையான கட்டணம் எதுவும் செயலாக்கப்படாது. உங்கள் முன்பதிவை முடிக்க "உறுதிசெய்து பணம் செலுத்து" என்பதைக் கிளிக் செய்யவும்.' })}
+                  </AlertDescription>
+                </Alert>
+
+            </CardContent>
+            <CardFooter className="flex justify-between">
+                <Button variant="outline" onClick={() => setShowPayment(false)}>
+                    {t({ en: 'Back to Form', ta: 'படிவத்திற்குத் திரும்பு' })}
+                </Button>
+                <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? t({ en: 'Processing...', ta: 'செயலாக்குகிறது...' }) : t({ en: 'Confirm & Pay', ta: 'உறுதிசெய்து பணம் செலுத்து' })}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+  }
+
   if (isSubmitted) {
     return (
       <Card className="text-center p-8">
@@ -196,7 +259,6 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   }
 
   const currentStepData = registrationForm.steps[currentStepIndex];
-  const isFinalStep = currentStepIndex === registrationForm.steps.length - 1;
 
   return (
     <Card>
@@ -266,8 +328,8 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
                     </Button>
                     
                     {isFinalStep ? (
-                        <Button type="submit" disabled={form.formState.isSubmitting || !selectedSlotId}>
-                            {form.formState.isSubmitting ? t({ en: 'Submitting...', ta: 'சமர்ப்பிக்கப்படுகிறது...' }) : t({ en: 'Book Now', ta: 'இப்போதே முன்பதிவு செய்யவும்' })}
+                        <Button type="button" onClick={handleNextStep} disabled={!selectedSlotId}>
+                           {t({ en: 'Proceed to Payment', ta: 'பணம் செலுத்த தொடரவும்' })}
                         </Button>
                     ) : (
                         <Button type="button" onClick={handleNextStep}>
