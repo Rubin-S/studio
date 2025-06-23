@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import type { Booking } from './types';
 import { getDb } from './firebase';
-import { collection, getDocs, query, orderBy, doc, runTransaction, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, runTransaction, writeBatch, updateDoc } from 'firebase/firestore';
 
 const handleDbError = (context: string) => {
   console.warn(`[DB] ${context}: Firestore is not initialized. This is expected if Firebase environment variables are not set.`);
@@ -49,7 +49,6 @@ export async function createBooking(
   slot: { id: string; date: string; startTime: string; endTime: string },
   formData: { [key: string]: string },
   transactionId: string,
-  paymentScreenshotUrl: string
 ): Promise<{ success: boolean; bookingId?: string; error?: string }> {
     const db = getDb();
     if (!db) {
@@ -92,8 +91,7 @@ export async function createBooking(
                 formData,
                 submittedAt: new Date().toISOString(),
                 transactionId,
-                paymentScreenshotUrl,
-                paymentVerified: false,
+                paymentVerified: false, // Always false initially, verified by admin
             };
             
             transaction.set(newBookingRef, newBookingData);
@@ -113,6 +111,7 @@ export async function createBooking(
     }
 }
 
+
 export async function deleteAllBookings(): Promise<{ success: boolean }> {
     const db = getDb();
     if (!db) {
@@ -120,16 +119,31 @@ export async function deleteAllBookings(): Promise<{ success: boolean }> {
         throw new Error("Database not initialized.");
     }
     try {
+        // Reset bookedBy in all slots of all courses first
+        const coursesCollection = collection(db, 'courses');
+        const coursesSnapshot = await getDocs(coursesCollection);
+        const courseBatch = writeBatch(db);
+        coursesSnapshot.forEach(courseDoc => {
+            const courseData = courseDoc.data();
+            if (courseData.slots && Array.isArray(courseData.slots)) {
+                const updatedSlots = courseData.slots.map((slot: any) => ({ ...slot, bookedBy: null }));
+                courseBatch.update(courseDoc.ref, { slots: updatedSlots });
+            }
+        });
+        await courseBatch.commit();
+        
+        // Now delete all bookings
         const bookingsCollection = collection(db, 'bookings');
-        const querySnapshot = await getDocs(bookingsCollection);
-         if (querySnapshot.empty) {
+        const bookingsSnapshot = await getDocs(bookingsCollection);
+         if (bookingsSnapshot.empty) {
             return { success: true };
         }
-        const batch = writeBatch(db);
-        querySnapshot.docs.forEach((doc) => {
-            batch.delete(doc.ref);
+        const deleteBatch = writeBatch(db);
+        bookingsSnapshot.docs.forEach((doc) => {
+            deleteBatch.delete(doc.ref);
         });
-        await batch.commit();
+        await deleteBatch.commit();
+
         return { success: true };
     } catch (error) {
         console.error("[DB] Error deleting all bookings.", error);

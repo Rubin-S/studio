@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format, isValid, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileSearch } from 'lucide-react';
+import { FileSearch, CheckCircle } from 'lucide-react';
+import { verifyPaymentAction } from './actions';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookingsClientProps {
   courses: Course[];
@@ -22,8 +24,24 @@ const formatDateSafe = (dateString: string, formatString: string) => {
     return isValid(date) ? format(date, formatString) : 'N/A';
 };
 
-export default function BookingsClient({ courses, bookings }: BookingsClientProps) {
+export default function BookingsClient({ courses, bookings: initialBookings }: BookingsClientProps) {
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  const [bookings, setBookings] = useState(initialBookings);
+  const { toast } = useToast();
+
+  const handleVerifyPayment = async (bookingId: string) => {
+    const result = await verifyPaymentAction(bookingId);
+    if (result.success) {
+      toast({ title: "Success", description: "Payment has been marked as verified." });
+      setBookings(currentBookings => 
+        currentBookings.map(b => 
+          b.id === bookingId ? { ...b, paymentVerified: true } : b
+        )
+      );
+    } else {
+      toast({ variant: 'destructive', title: "Error", description: result.error });
+    }
+  };
 
   const { selectedCourse, filteredBookings, tableHeaders } = useMemo(() => {
     if (!selectedCourseId) {
@@ -77,9 +95,9 @@ export default function BookingsClient({ courses, bookings }: BookingsClientProp
                       {tableHeaders.map(header => (
                         <TableHead key={header} className="whitespace-nowrap">{header}</TableHead>
                       ))}
-                       <TableHead className="whitespace-nowrap">Transaction ID</TableHead>
-                       <TableHead className="whitespace-nowrap">Screenshot</TableHead>
-                       <TableHead className="whitespace-nowrap">Payment Status</TableHead>
+                       <TableHead className="whitespace-nowrap">Payment ID</TableHead>
+                       <TableHead className="whitespace-nowrap">Status</TableHead>
+                       <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -97,20 +115,17 @@ export default function BookingsClient({ courses, bookings }: BookingsClientProp
                         ))}
                         <TableCell>{booking.transactionId || 'N/A'}</TableCell>
                         <TableCell>
-                           {booking.paymentScreenshotUrl ? (
-                            <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                              <a href={booking.paymentScreenshotUrl} target="_blank" rel="noopener noreferrer">
-                                View
-                              </a>
-                            </Button>
-                          ) : (
-                            'N/A'
-                          )}
-                        </TableCell>
-                        <TableCell>
                            <Badge variant={booking.paymentVerified ? 'secondary' : 'destructive'}>
                               {booking.paymentVerified ? 'Verified' : 'Pending'}
                            </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                           {!booking.paymentVerified && (
+                             <Button size="sm" onClick={() => handleVerifyPayment(booking.id)}>
+                               <CheckCircle className="mr-2 h-4 w-4"/>
+                               Verify
+                             </Button>
+                           )}
                         </TableCell>
                       </TableRow>
                     ))}

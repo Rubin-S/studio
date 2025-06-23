@@ -7,7 +7,7 @@ import {
 } from '@/lib/courses';
 import { deleteAllBookings } from '@/lib/bookings';
 import { v4 as uuidv4 } from 'uuid';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 
 export async function deleteAllDataAction() {
   // Make deletion sequential to prevent potential race conditions
@@ -71,7 +71,7 @@ export async function seedSampleDataAction() {
           id: step2Id,
           name: { en: 'License Details', ta: 'உரிம விவரங்கள்' },
           fields: [
-            { id: uuidv4(), type: 'text' as const, required: true, label: { en: "Learner's License Number", ta: 'பழகுநர் உரிம எண்' }, placeholder: { en: 'TN-32-A-12345', ta: 'TN-32-A-12345' } },
+            { id: uuidv4(), type: 'text' as const, required: true, label: { en: "Learner's License Number", ta: 'பழகுநர் உரிம எண்' }, placeholder: { en: 'TN-32-A-12345', ta: 'TN-32-A-12345' } }
           ]
         },
         {
@@ -86,10 +86,10 @@ export async function seedSampleDataAction() {
       ]
     },
     slots: [
-      { id: uuidv4(), date: format(new Date(Date.now() + 1 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
-      { id: uuidv4(), date: format(new Date(Date.now() + 1 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '10:00', endTime: '11:00', bookedBy: null },
-      { id: uuidv4(), date: format(new Date(Date.now() + 2 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
-      { id: uuidv4(), date: format(new Date(Date.now() + 3 * 24 * 3600 * 1000), 'yyyy-MM-dd'), startTime: '11:00', endTime: '12:00', bookedBy: null },
+      { id: uuidv4(), date: format(addDays(new Date(), 1), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
+      { id: uuidv4(), date: format(addDays(new Date(), 1), 'yyyy-MM-dd'), startTime: '10:00', endTime: '11:00', bookedBy: null },
+      { id: uuidv4(), date: format(addDays(new Date(), 2), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
+      { id: uuidv4(), date: format(addDays(new Date(), 3), 'yyyy-MM-dd'), startTime: '11:00', endTime: '12:00', bookedBy: null },
     ],
   };
 
