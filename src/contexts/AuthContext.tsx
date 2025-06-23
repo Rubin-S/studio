@@ -2,15 +2,16 @@
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<any>;
+  login: (email: string, pass: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
+  signup: (email: string, pass: string) => Promise<UserCredential>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,15 +43,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
+  const signup = (email: string, pass: string) => {
+    const auth = getFirebaseAuth();
+    if (!auth) return Promise.reject(new Error("Auth not initialized"));
+    return createUserWithEmailAndPassword(auth, email, pass);
+  };
+
   const logout = async () => {
     const auth = getFirebaseAuth();
     if (!auth) return;
     await signOut(auth);
-    // After sign out, redirect to login page to prevent access to protected routes.
     router.push('/login');
   };
 
-  const value = { user, loading, login, logout };
+  const value = { user, loading, login, signup, logout };
 
   return (
     <AuthContext.Provider value={value}>

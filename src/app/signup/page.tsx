@@ -6,59 +6,70 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Car, LogIn } from 'lucide-react';
+import { Car, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FirebaseError } from 'firebase/app';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { user, loading, login } = useAuth();
+  const { user, loading, signup } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const redirectTo = searchParams.get('redirectTo') || '/';
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
 
   useEffect(() => {
     if (!loading && user) {
-      if (user.email === 'admin@smds.com') {
-        router.replace('/admin');
-      } else {
-        router.replace(redirectTo === '/' ? '/dashboard' : redirectTo);
-      }
+      router.replace(redirectTo);
     }
   }, [user, loading, router, redirectTo]);
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: "Passwords do not match.",
+      });
+      return;
+    }
     setIsSubmitting(true);
     
     try {
-      await login(email, password);
+      await signup(email, password);
       toast({
-        title: "Login Successful",
-        description: "Redirecting...",
+        title: "Signup Successful",
+        description: "Welcome! Redirecting you now...",
       });
     } catch (err: any) {
       let description = "An unknown error occurred. Please try again.";
       
-      if (err.code === 'auth/invalid-credential') {
-        description = "Invalid email or password. Please double-check and try again.";
-      } else if (err.message === 'Auth not initialized') {
-        description = "Authentication service could not be reached. Please ensure Firebase is configured correctly.";
-      } else if (err.code) {
-        description = `An unexpected error occurred. Please try again later. (Code: ${err.code})`;
+      if (err instanceof FirebaseError) {
+        switch (err.code) {
+          case 'auth/email-already-in-use':
+            description = "This email is already registered. Please try logging in.";
+            break;
+          case 'auth/weak-password':
+            description = "The password is too weak. Please choose a stronger password.";
+            break;
+          case 'auth/invalid-email':
+            description = "The email address is not valid.";
+            break;
+        }
       }
 
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: description,
+        title: "Signup Failed",
+        description,
       });
       setIsSubmitting(false);
     }
@@ -75,21 +86,15 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary">
       <Card className="w-full max-w-sm">
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSignup}>
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Car className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Login to access your account.</CardDescription>
+            <CardTitle className="font-headline text-2xl">Create an Account</CardTitle>
+            <CardDescription>Start your driving journey with us today.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             {redirectTo !== '/' && (
-                <Alert>
-                    <AlertTitle>Please Login</AlertTitle>
-                    <AlertDescription>You need to be logged in to access this page.</AlertDescription>
-                </Alert>
-             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -115,20 +120,32 @@ export default function LoginPage() {
                 disabled={isSubmitting}
               />
             </div>
+             <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Logging in...' : (
+              {isSubmitting ? 'Creating Account...' : (
                 <>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign Up
                 </>
               )}
             </Button>
             <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href={`/signup?redirectTo=${encodeURIComponent(redirectTo)}`} className="font-medium text-primary hover:underline">
-                    Sign up
+                Already have an account?{" "}
+                <Link href={`/login?redirectTo=${encodeURIComponent(redirectTo)}`} className="font-medium text-primary hover:underline">
+                    Log in
                 </Link>
             </p>
           </CardFooter>

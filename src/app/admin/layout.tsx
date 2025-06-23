@@ -15,9 +15,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const { user, loading, logout } = useAuth();
 
     useEffect(() => {
-      // If auth is not loading and there's no user, redirect to login
-      if (!loading && !user) {
-        router.replace('/login');
+      if (!loading) {
+        if (!user) {
+          router.replace('/login');
+        } else if (user.email !== 'admin@smds.com') {
+          router.replace('/dashboard');
+        }
       }
     }, [user, loading, router]);
 
@@ -32,44 +35,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 
-    // While checking authentication, show a loading skeleton to prevent content flash
-    if (loading) {
+    if (loading || !user || user.email !== 'admin@smds.com') {
         return (
-            <div className="flex h-screen w-full">
-                {/* Sidebar Skeleton */}
-                <div className="hidden w-64 flex-col border-r bg-card p-4 md:flex">
-                    <div className="flex items-center gap-2 p-2">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-3 w-28" />
-                        </div>
-                    </div>
-                    <div className="mt-8 flex flex-col gap-2">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                    <div className="mt-auto">
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                </div>
-                {/* Main Content Skeleton */}
-                <div className="flex-1 space-y-8 p-8">
-                    <div>
-                        <Skeleton className="h-8 w-64" />
-                        <Skeleton className="mt-2 h-4 w-96" />
-                    </div>
-                    <Skeleton className="h-48 w-full rounded-lg" />
-                    <Skeleton className="h-64 w-full rounded-lg" />
-                </div>
+            <div className="flex h-screen w-full items-center justify-center">
+                <p>Loading admin area...</p>
             </div>
         );
-    }
-    
-    // If not authenticated, the redirect is already in progress, so we return null
-    if (!user) {
-        return null;
     }
 
     return (

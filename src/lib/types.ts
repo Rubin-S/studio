@@ -60,6 +60,7 @@ export type Course = {
 
 export type Booking = {
   id: string;
+  userId: string;
   courseId: string;
   courseTitle: string;
   slotId: string;
@@ -69,6 +70,5 @@ export type Booking = {
   formData: { [key: string]: string };
   submittedAt: string; // ISO 8601 format
   transactionId: string;
-  paymentScreenshotUrl?: string; // Kept for legacy data, but no longer used for new bookings
   paymentVerified: boolean;
 };

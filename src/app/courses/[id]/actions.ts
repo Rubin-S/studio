@@ -5,6 +5,7 @@ import { createBooking } from '@/lib/bookings';
 import { getCourseById } from '@/lib/courses';
 
 export async function submitBookingAction(
+  userId: string,
   courseId: string,
   slotId: string,
   formData: { [key: string]: any },
@@ -48,6 +49,7 @@ export async function submitBookingAction(
     }
     
     const result = await createBooking(
+      userId,
       course.id,
       course.title.en,
       slot,
@@ -58,6 +60,7 @@ export async function submitBookingAction(
     if (result.success) {
       revalidatePath(`/courses/${courseId}/book`);
       revalidatePath('/admin/bookings');
+      revalidatePath('/dashboard');
       return { success: true, bookingId: result.bookingId };
     } else {
       return { success: false, error: result.error };

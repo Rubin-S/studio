@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { Course, FormField as FormFieldType } from '@/lib/types';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -20,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { submitBookingAction } from '../actions';
 import { createRazorpayOrder, verifyRazorpaySignature } from './razorpay-actions';
 import { format, parseISO, isValid } from 'date-fns';
-import { Clock, Terminal, CheckCircle, CreditCard } from 'lucide-react';
+import { Clock, Terminal, CheckCircle, CreditCard, LogIn, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import Script from 'next/script';
@@ -54,11 +56,16 @@ const renderFormField = (formField: FormFieldType, language: 'en' | 'ta', t: (tr
     )
 };
 
+interface BookingPageClientProps {
+  course: Course;
+}
 
 export default function BookingPageClient({ course }: BookingPageClientProps) {
   const { t, language } = useLanguage();
   const router = useRouter();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>(undefined);
@@ -110,15 +117,30 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     mode: 'onChange'
   });
 
+  useEffect(() => {
+     if(user) {
+        const emailField = allFormFields.find(f => f.type === 'email');
+        if (emailField && user.email) {
+            form.setValue(`${emailField.id}-${language}` as any, user.email, { shouldValidate: true });
+        }
+        const nameField = allFormFields.find(f => f.label.en.toLowerCase().includes('name'));
+         if (nameField && user.displayName) {
+            form.setValue(`${nameField.id}-${language}` as any, user.displayName, { shouldValidate: true });
+        }
+     }
+  }, [user, allFormFields, form, language]);
+
+
   const isFinalStep = currentStepIndex === registrationForm.steps.length - 1;
 
   const onFinalSubmit = async (data: z.infer<typeof dynamicSchema>, paymentId: string) => {
-    if (!selectedSlotId) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Please select a date and time slot first.' });
+    if (!selectedSlotId || !user) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please select a slot and ensure you are logged in.' });
+      setIsProcessingPayment(false);
       return;
     }
     
-    const result = await submitBookingAction(course.id, selectedSlotId, data, paymentId);
+    const result = await submitBookingAction(user.uid, course.id, selectedSlotId, data, paymentId);
     if (result.success) {
         setIsSubmitted(true);
         form.reset();
@@ -140,12 +162,9 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
         return;
     }
     
-    const customerNameField = allFormFields.find(f => f.label.en.toLowerCase().includes('name'));
-    const customerEmailField = allFormFields.find(f => f.type === 'email');
+    const customerName = user?.displayName || 'Student';
+    const customerEmail = user?.email;
     const customerContactField = allFormFields.find(f => f.type === 'tel');
-
-    const customerName = customerNameField ? form.getValues(`${customerNameField.id}-${language}` as any) : 'Customer';
-    const customerEmail = customerEmailField ? form.getValues(`${customerEmailField.id}-${language}` as any) : undefined;
     const customerContact = customerContactField ? form.getValues(`${customerContactField.id}-${language}` as any) : undefined;
 
     const options = {
@@ -178,6 +197,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
         notes: {
             courseId: course.id,
             courseTitle: t(course.title),
+            userId: user?.uid
         },
         theme: {
             color: "#6A1B9A" // primary color
@@ -236,6 +256,35 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     setCurrentStepIndex(prev => Math.max(0, prev - 1));
   };
 
+  if (authLoading) {
+      return <Card className="flex items-center justify-center p-10"><p>Loading booking page...</p></Card>
+  }
+
+  if (!user) {
+    return (
+        <Card className="text-center p-8">
+            <CardTitle>Login Required</CardTitle>
+            <CardDescription className="mt-2 mb-6">
+                You need to have an account to book a course.
+            </CardDescription>
+            <div className="flex gap-4 justify-center">
+                <Button asChild>
+                    <Link href={`/login?redirectTo=/courses/${course.id}/book`}>
+                        <LogIn className="mr-2" />
+                        Login
+                    </Link>
+                </Button>
+                <Button asChild variant="outline">
+                    <Link href={`/signup?redirectTo=/courses/${course.id}/book`}>
+                        <UserPlus className="mr-2" />
+                        Sign Up
+                    </Link>
+                </Button>
+            </div>
+        </Card>
+    )
+  }
+
 
   if (isSubmitted) {
     return (
@@ -245,8 +294,8 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
         <CardDescription className="mt-2">
             {t({ en: "Your slot is booked. We look forward to seeing you!", ta: "உங்கள் இடம் முன்பதிவு செய்யப்பட்டுள்ளது. உங்களை சந்திக்க ஆவலுடன் உள்ளோம்!"})}
         </CardDescription>
-        <Button onClick={() => router.push('/courses')} className="mt-6">
-            {t({ en: "Back to Courses", ta: "படிப்புகளுக்குத் திரும்பு" })}
+        <Button onClick={() => router.push('/dashboard')} className="mt-6">
+            {t({ en: "Go to Dashboard", ta: "டாஷ்போர்டுக்குச் செல்லவும்" })}
         </Button>
       </Card>
     );
