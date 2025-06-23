@@ -11,7 +11,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -36,7 +37,7 @@ const renderFormField = (formField: FormFieldType, language: 'en' | 'ta', t: (tr
             name={fieldName as any}
             render={({ field }) => (
             <FormItem>
-                <FormLabel>{t(formField.label)}{formField.required && '*'}</FormLabel>
+                <Label>{t(formField.label)}{formField.required && '*'}</Label>
                 <FormControl>
                 {formField.type === 'textarea' ? ( <Textarea placeholder={t(formField.placeholder)} {...field} />
                 ) : formField.type === 'select' ? (
@@ -228,15 +229,15 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
                 </div>
 
                 <div className="space-y-4">
-                    <FormItem>
-                        <FormLabel>{t({ en: 'UPI Transaction ID', ta: 'UPI பரிவர்த்தனை ஐடி' })}*</FormLabel>
-                        <Input value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder={t({ en: 'Enter the 12-digit transaction ID', ta: '12 இலக்க பரிவர்த்தனை ஐடியை உள்ளிடவும்' })} />
-                    </FormItem>
-                    <FormItem>
-                        <FormLabel>{t({ en: 'Upload Payment Screenshot', ta: 'பணம் செலுத்தியதற்கான ஸ்கிரீன்ஷாட்டைப் பதிவேற்றவும்' })}*</FormLabel>
-                        <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
-                         <FormMessage>{t({ en: 'Max file size: 2MB', ta: 'அதிகபட்ச கோப்பு அளவு: 2MB' })}</FormMessage>
-                    </FormItem>
+                    <div className="space-y-2">
+                        <Label htmlFor="transactionId">{t({ en: 'UPI Transaction ID', ta: 'UPI பரிவர்த்தனை ஐடி' })}*</Label>
+                        <Input id="transactionId" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder={t({ en: 'Enter the 12-digit transaction ID', ta: '12 இலக்க பரிவர்த்தனை ஐடியை உள்ளிடவும்' })} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="paymentScreenshot">{t({ en: 'Upload Payment Screenshot', ta: 'பணம் செலுத்தியதற்கான ஸ்கிரீன்ஷாட்டைப் பதிவேற்றவும்' })}*</Label>
+                        <Input id="paymentScreenshot" type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
+                         <p className="text-sm text-muted-foreground">{t({ en: 'Max file size: 2MB', ta: 'அதிகபட்ச கோப்பு அளவு: 2MB' })}</p>
+                    </div>
                     {paymentScreenshotPreview && (
                         <div>
                           <p className="text-sm font-medium mb-2">Screenshot Preview:</p>
