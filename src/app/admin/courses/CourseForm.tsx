@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, type Control } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -61,6 +61,52 @@ const courseFormSchema = z.object({
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
+
+// Helper component for editing select options, defined outside the main component
+function FormFieldOptionsEditor({ control, fieldIndex }: { control: Control<CourseFormValues>; fieldIndex: number }) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `formFields.${fieldIndex}.options`,
+  });
+
+  return (
+    <div className="mt-4 space-y-4 rounded-md border bg-muted/50 p-4">
+      <h4 className="font-medium text-sm text-muted-foreground">Options for Select Field</h4>
+      <div className="space-y-4">
+        {fields.map((field, optionIndex) => (
+          <div key={field.id} className="flex gap-2 items-end">
+            <FormField
+              name={`formFields.${fieldIndex}.options.${optionIndex}.en`}
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="text-xs">Option (EN)</FormLabel>
+                  <FormControl><Input {...field} placeholder="Option in English" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name={`formFields.${fieldIndex}.options.${optionIndex}.ta`}
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="text-xs">Option (TA)</FormLabel>
+                  <FormControl><Input {...field} placeholder="Option in Tamil" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="button" variant="ghost" size="icon" onClick={() => remove(optionIndex)}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={() => append({ en: '', ta: '' })}>
+        <PlusCircle className="mr-2 h-4 w-4" /> Add Option
+      </Button>
+    </div>
+  );
+}
 
 interface CourseFormProps {
   course?: Course;
@@ -161,20 +207,39 @@ export function CourseForm({ course }: CourseFormProps) {
                 <CardDescription>Build a form for users to fill out when booking. Add any fields you need to collect information.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                {formFields.map((field, index) => (
-                    <div key={field.id} className="rounded-lg border p-4 space-y-4 relative">
+                {formFields.map((field, index) => {
+                  const fieldType = form.watch(`formFields.${index}.type`);
+
+                  return (
+                    <div key={field.id} className="rounded-lg border p-4 space-y-4 relative bg-card">
+                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 z-10" onClick={() => removeFormField(index)}><Trash2 className="h-4 w-4" /></Button>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField name={`formFields.${index}.type`} render={({ field }) => <FormItem><FormLabel>Field Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="email">Email</SelectItem><SelectItem value="tel">Phone Number</SelectItem><SelectItem value="textarea">Text Area</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
-                            <FormField name={`formFields.${index}.required`} render={({ field }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Required</FormLabel><FormDescription>Is this field mandatory?</FormDescription></div></FormItem>} />
+                            <FormField name={`formFields.${index}.type`} render={({ field }) => <FormItem><FormLabel>Field Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="email">Email</SelectItem><SelectItem value="tel">Phone Number</SelectItem><SelectItem value="textarea">Text Area</SelectItem><SelectItem value="select">Select</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
+                            <FormField name={`formFields.${index}.required`} render={({ field }) => <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 h-10"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Required</FormLabel></div></FormItem>} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField name={`formFields.${index}.label.en`} render={({ field }) => <FormItem><FormLabel>Label (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
                             <FormField name={`formFields.${index}.label.ta`} render={({ field }) => <FormItem><FormLabel>Label (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
                         </div>
-                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2" onClick={() => removeFormField(index)}><Trash2 className="h-4 w-4" /></Button>
+                        
+                        {fieldType !== 'select' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField name={`formFields.${index}.placeholder.en`} render={({ field }) => <FormItem><FormLabel>Placeholder (EN)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                <FormField name={`formFields.${index}.placeholder.ta`} render={({ field }) => <FormItem><FormLabel>Placeholder (TA)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                            </div>
+                        )}
+
+                        {fieldType === 'select' && (
+                            <FormFieldOptionsEditor
+                                control={form.control}
+                                fieldIndex={index}
+                            />
+                        )}
                     </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendFormField({id: uuidv4(), type: 'text', label: { en: '', ta: '' }, required: false })}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Field</Button>
+                  );
+                })}
+                <Button type="button" variant="outline" size="sm" onClick={() => appendFormField({id: uuidv4(), type: 'text', label: { en: '', ta: '' }, placeholder: { en: '', ta: '' }, required: false, options: [] })}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Field</Button>
             </CardContent>
         </Card>
 
@@ -186,7 +251,7 @@ export function CourseForm({ course }: CourseFormProps) {
             <CardContent className="space-y-4">
                 {slotFields.map((field, index) => (
                     <div key={field.id} className="flex gap-4 items-end">
-                        <FormField name={`slots.${index}.dateTime`} render={({ field }) => <FormItem className="flex-1"><FormLabel>Slot Date & Time</FormLabel><FormControl><Input {...field} placeholder="YYYY-MM-DDTHH:mm" /></FormControl><FormMessage /></FormItem>} />
+                        <FormField name={`slots.${index}.dateTime`} render={({ field }) => <FormItem className="flex-1"><FormLabel>Slot Date & Time</FormLabel><FormControl><Input type="datetime-local" {...field} /></FormControl><FormMessage /></FormItem>} />
                         <Button type="button" variant="destructive" size="icon" onClick={() => removeSlot(index)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                 ))}

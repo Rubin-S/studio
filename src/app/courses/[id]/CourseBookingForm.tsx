@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,7 @@ import { submitBookingAction } from './actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CourseBookingFormProps {
   course: Course;
@@ -146,13 +147,25 @@ export default function CourseBookingForm({ course }: CourseBookingFormProps) {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>{t(formField.label)}{formField.required && '*'}</FormLabel>
-
                                 <FormControl>
-                                    {formField.type === 'textarea' ? (
-                                        <Textarea placeholder={t(formField.placeholder)} {...field} />
-                                    ) : (
-                                        <Input type={formField.type} placeholder={t(formField.placeholder)} {...field} />
-                                    )}
+                                  {formField.type === 'textarea' ? (
+                                    <Textarea placeholder={t(formField.placeholder)} {...field} />
+                                  ) : formField.type === 'select' ? (
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder={t(formField.placeholder) || t({ en: 'Select an option', ta: 'ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்' })} />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {formField.options?.map((option, i) => (
+                                          <SelectItem key={i} value={t(option)}>{t(option)}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Input type={formField.type} placeholder={t(formField.placeholder)} {...field} />
+                                  )}
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
