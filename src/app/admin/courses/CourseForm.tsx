@@ -24,6 +24,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
 
 const localizedStringSchema = z.object({
   en: z.string().min(1, 'English value is required'),
@@ -93,7 +94,7 @@ function CopySlotsDialog({ slots, onCopy }: { slots: CourseFormValues['slots'], 
   const [sourceDate, setSourceDate] = useState<string>('');
   const [targetDates, setTargetDates] = useState<Date[]>([]);
 
-  const uniqueDates = Array.from(new Set(slots.map(s => s.date))).sort();
+  const uniqueDates = Array.from(new Set(slots.map(s => s.date).filter(Boolean))).sort();
 
   const handleCopy = () => {
     if (sourceDate && targetDates.length > 0) {
