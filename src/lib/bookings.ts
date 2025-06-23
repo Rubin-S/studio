@@ -18,23 +18,32 @@ export async function getBookings(): Promise<Booking[]> {
     const bookingsCollection = collection(db, 'bookings');
     const q = query(bookingsCollection, orderBy('submittedAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    const bookings = querySnapshot.docs.map(doc => {
+    
+    const bookings: Booking[] = [];
+    querySnapshot.docs.forEach(doc => {
         const data = doc.data();
+        
+        // Production-ready validation: Skip documents missing essential fields.
+        if (!data.userId || !data.courseId || !data.slotDate || !data.submittedAt) {
+            console.warn(`[DB] Skipping malformed booking document with ID: ${doc.id}`);
+            return;
+        }
+
         const booking: Booking = {
             id: doc.id,
-            userId: data.userId || '',
-            courseId: data.courseId || '',
+            userId: data.userId,
+            courseId: data.courseId,
             courseTitle: data.courseTitle || 'Unknown Course',
-            slotId: data.slotId || '',
-            slotDate: data.slotDate || 'N/A',
+            slotId: data.slotId || 'N/A',
+            slotDate: data.slotDate,
             slotStartTime: data.slotStartTime || 'N/A',
             slotEndTime: data.slotEndTime || 'N/A',
             formData: data.formData && typeof data.formData === 'object' ? data.formData : {},
-            submittedAt: data.submittedAt || new Date(0).toISOString(),
+            submittedAt: data.submittedAt,
             transactionId: data.transactionId || '',
             paymentVerified: data.paymentVerified === true,
         };
-        return booking;
+        bookings.push(booking);
     });
     return bookings;
   } catch (error) {
@@ -55,23 +64,32 @@ export async function getBookingsByUserId(userId: string): Promise<Booking[]> {
     const bookingsCollection = collection(db, 'bookings');
     const q = query(bookingsCollection, where('userId', '==', userId), orderBy('submittedAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    const bookings = querySnapshot.docs.map(doc => {
+
+    const bookings: Booking[] = [];
+    querySnapshot.docs.forEach(doc => {
         const data = doc.data();
+
+        // Production-ready validation: Skip documents missing essential fields.
+        if (!data.userId || !data.courseId || !data.slotDate || !data.submittedAt) {
+            console.warn(`[DB] Skipping malformed booking document with ID: ${doc.id} for user ${userId}`);
+            return; // Skip this invalid document
+        }
+
         const booking: Booking = {
             id: doc.id,
-            userId: data.userId || '',
-            courseId: data.courseId || '',
+            userId: data.userId,
+            courseId: data.courseId,
             courseTitle: data.courseTitle || 'Unknown Course',
-            slotId: data.slotId || '',
-            slotDate: data.slotDate || 'N/A',
+            slotId: data.slotId || 'N/A',
+            slotDate: data.slotDate,
             slotStartTime: data.slotStartTime || 'N/A',
             slotEndTime: data.slotEndTime || 'N/A',
             formData: data.formData && typeof data.formData === 'object' ? data.formData : {},
-            submittedAt: data.submittedAt || new Date(0).toISOString(),
+            submittedAt: data.submittedAt,
             transactionId: data.transactionId || '',
             paymentVerified: data.paymentVerified === true,
         };
-        return booking;
+        bookings.push(booking);
     });
     return bookings;
   } catch (error) {

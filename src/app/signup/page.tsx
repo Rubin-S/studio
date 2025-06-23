@@ -18,6 +18,7 @@ export default function SignupPage() {
   const { toast } = useToast();
   const { user, loading, signup } = useAuth();
   
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -44,7 +45,7 @@ export default function SignupPage() {
     setIsSubmitting(true);
     
     try {
-      await signup(email, password);
+      await signup(email, password, name);
       toast({
         title: "Signup Successful",
         description: "Welcome! Redirecting you now...",
@@ -95,6 +96,19 @@ export default function SignupPage() {
             <CardDescription>Start your driving journey with us today.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+             <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Your Name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input

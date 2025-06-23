@@ -47,25 +47,31 @@ export async function getCourses(): Promise<Course[]> {
     const coursesCollection = collection(db, 'courses');
     const querySnapshot = await getDocs(coursesCollection);
     
-    const courses = querySnapshot.docs.map(doc => {
+    const courses: Course[] = [];
+    querySnapshot.docs.forEach(doc => {
       const data = doc.data();
+      
+      // Production-ready validation: Skip documents that are missing essential fields.
+      if (!data.title || !data.title.en || !data.price || typeof data.price.discounted !== 'number') {
+          console.warn(`[DB] Skipping malformed course document with ID: ${doc.id}`);
+          return;
+      }
+
       const course: Course = {
         id: doc.id,
-        title: data.title || { en: 'Untitled Course', ta: 'பெயரிடப்படாத படிப்பு' },
+        title: data.title,
         thumbnail: data.thumbnail || 'https://placehold.co/600x400.png',
         shortDescription: data.shortDescription || { en: '', ta: '' },
         detailedDescription: data.detailedDescription || { en: '', ta: '' },
         whatWeOffer: Array.isArray(data.whatWeOffer) ? data.whatWeOffer : [],
-        price: data.price && typeof data.price.original === 'number' && typeof data.price.discounted === 'number'
-          ? data.price
-          : { original: 0, discounted: 0 },
+        price: data.price,
         instructions: data.instructions || { en: '', ta: '' },
         youtubeLink: data.youtubeLink || '',
         documentUrl: data.documentUrl || '',
         registrationForm: ensureRegistrationForm(data),
         slots: Array.isArray(data.slots) ? data.slots : [],
       };
-      return course;
+      courses.push(course);
     });
 
     return courses;
@@ -88,16 +94,20 @@ export async function getCourseById(id: string): Promise<Course | undefined> {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
+
+       if (!data.title || !data.title.en || !data.price || typeof data.price.discounted !== 'number') {
+          console.warn(`[DB] Returning undefined for malformed course document with ID: ${docSnap.id}`);
+          return undefined;
+      }
+
       const course: Course = {
         id: docSnap.id,
-        title: data.title || { en: 'Untitled Course', ta: 'பெயரிடப்படாத படிப்பு' },
+        title: data.title,
         thumbnail: data.thumbnail || 'https://placehold.co/600x400.png',
         shortDescription: data.shortDescription || { en: '', ta: '' },
         detailedDescription: data.detailedDescription || { en: '', ta: '' },
         whatWeOffer: Array.isArray(data.whatWeOffer) ? data.whatWeOffer : [],
-        price: data.price && typeof data.price.original === 'number' && typeof data.price.discounted === 'number'
-          ? data.price
-          : { original: 0, discounted: 0 },
+        price: data.price,
         instructions: data.instructions || { en: '', ta: '' },
         youtubeLink: data.youtubeLink || '',
         documentUrl: data.documentUrl || '',
@@ -144,16 +154,7 @@ export async function updateCourse(id: string, data: Partial<Omit<Course, 'id'>>
       const { formFields, ...restData } = data as any;
       await updateDoc(docRef, restData);
     }
-    const updatedDoc = await getDoc(docRef);
-    if (updatedDoc.exists()) {
-      const docData = updatedDoc.data()
-      return { 
-          id: updatedDoc.id,
-          ...docData,
-          registrationForm: ensureRegistrationForm(docData)
-      } as Course;
-    }
-    return undefined;
+    return await getCourseById(id);
   } catch (error) {
     console.error(`[DB] Error updating course with ID ${id}. This might be due to Firestore security rules. Please ensure your rules allow write access.`, error);
     throw error;

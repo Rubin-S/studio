@@ -7,8 +7,22 @@ import type { Booking } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, FileText, UserCircle, CheckCircle, AlertCircle } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// A resilient date formatting function to prevent crashes
+const formatDateSafe = (dateString: string) => {
+    try {
+        const date = parseISO(dateString);
+        if (isValid(date)) {
+            return format(date, 'PPP'); // e.g., Jun 1, 2024
+        }
+    } catch (e) {
+        // Fallthrough to return 'Invalid Date'
+    }
+    return 'Invalid Date';
+};
+
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -35,7 +49,7 @@ export default function DashboardPage() {
                 <UserCircle className="h-12 w-12 text-primary" />
                 <div>
                     <h1 className="font-headline text-3xl font-bold">My Dashboard</h1>
-                    <p className="text-muted-foreground">Welcome back, {user?.email}!</p>
+                    <p className="text-muted-foreground">Welcome back, {user?.displayName || user?.email}!</p>
                 </div>
             </div>
 
@@ -64,7 +78,7 @@ export default function DashboardPage() {
                                  <div className="mt-2 text-sm text-muted-foreground space-y-2">
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4" />
-                                        <span>Date: {format(parseISO(booking.slotDate), 'PPP')}</span>
+                                        <span>Date: {formatDateSafe(booking.slotDate)}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-4 w-4" />

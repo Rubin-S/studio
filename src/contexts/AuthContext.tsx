@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, UserCredential, updateProfile } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -11,7 +11,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, pass: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
-  signup: (email: string, pass: string) => Promise<UserCredential>;
+  signup: (email: string, pass: string, name?: string) => Promise<UserCredential>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,10 +43,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signup = (email: string, pass: string) => {
+  const signup = async (email: string, pass: string, name?: string) => {
     const auth = getFirebaseAuth();
-    if (!auth) return Promise.reject(new Error("Auth not initialized"));
-    return createUserWithEmailAndPassword(auth, email, pass);
+    if (!auth) throw new Error("Auth not initialized");
+    
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    
+    if (userCredential.user && name) {
+      await updateProfile(userCredential.user, {
+        displayName: name
+      });
+      // Force a reload of the user to get the new display name
+      await userCredential.user.reload();
+      // Manually update state to reflect change immediately
+      setUser({ ...userCredential.user, displayName: name });
+    }
+    
+    return userCredential;
   };
 
   const logout = async () => {
