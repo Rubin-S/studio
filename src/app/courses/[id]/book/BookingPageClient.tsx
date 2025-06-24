@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -112,7 +113,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     }, z.object({}));
   }, [allFormFields, language, t]);
 
-  const form = useForm<z.infer<typeof dynamicSchema>>({
+  const form = useForm<Record<string, any>>({
     resolver: zodResolver(dynamicSchema),
     mode: 'onChange'
   });
@@ -121,11 +122,11 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
      if(user) {
         const emailField = allFormFields.find(f => f.type === 'email');
         if (emailField && user.email) {
-            form.setValue(`${emailField.id}-${language}` as any, user.email, { shouldValidate: true });
+            form.setValue(`${emailField.id}-${language}`, user.email, { shouldValidate: true });
         }
         const nameField = allFormFields.find(f => f.label.en.toLowerCase().includes('name'));
          if (nameField && user.displayName) {
-            form.setValue(`${nameField.id}-${language}` as any, user.displayName, { shouldValidate: true });
+            form.setValue(`${nameField.id}-${language}`, user.displayName, { shouldValidate: true });
         }
      }
   }, [user, allFormFields, form, language]);
