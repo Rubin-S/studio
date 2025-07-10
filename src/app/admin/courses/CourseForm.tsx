@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFieldArray, useForm, type Control, useFormContext } from 'react-hook-form';
+import { useFieldArray, useForm, type Control, useFormContext, type FieldError } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -263,7 +264,7 @@ interface CourseFormProps {
   course?: Course;
 }
 
-const steps: {id: number, name: string, fields: (keyof CourseFormValues | `registrationForm.steps.${number}.name.en` | `registrationForm.steps.${number}.name.ta`)[]}[] = [
+const steps: {id: number, name: string, fields: (keyof CourseFormValues | string)[]}[] = [
     { id: 1, name: 'Course Info', fields: ['title.en', 'title.ta', 'shortDescription.en', 'shortDescription.ta', 'detailedDescription.en', 'detailedDescription.ta', 'instructions.en', 'instructions.ta', 'whatWeOffer'] },
     { id: 2, name: 'Registration Form', fields: ['registrationForm'] },
     { id: 3, name: 'Time Slots', fields: ['slots'] },
@@ -289,7 +290,7 @@ export function CourseForm({ course }: CourseFormProps) {
         instructions: { en: '', ta: '' },
         youtubeLink: '',
         documentUrl: '',
-        registrationForm: { steps: [{ id: uuidv4(), name: { en: 'Step 1', ta: 'படி 1' }, fields: [] }] },
+        registrationForm: { steps: [{ id: uuidv4(), name: { en: 'Step 1', ta: 'படி 1' }, fields: [], navigationRules: [] }] },
         slots: [],
     },
   });
@@ -347,30 +348,79 @@ export function CourseForm({ course }: CourseFormProps) {
     }
   };
   
-  const handleNext = async () => {
-    let fieldsToValidate = steps[currentStep - 1].fields;
+const handleNext = async () => {
+  let fieldsToValidate = steps[currentStep - 1].fields;
+  let invalidFieldLabels: string[] = [];
 
-    // For step 2, we need to validate all the dynamic step names as well.
-    if (currentStep === 2) {
-      const stepNameFields = registrationSteps.flatMap((_, index) => [
-        `registrationForm.steps.${index}.name.en`,
-        `registrationForm.steps.${index}.name.ta`,
-      ]);
-      fieldsToValidate = [...fieldsToValidate, ...stepNameFields] as any;
-    }
-    
-    const isValid = await form.trigger(fieldsToValidate as any, { shouldFocus: true });
+  if (currentStep === 2) {
+    // Dynamically build the list of all fields to validate for the registration form step
+    const regFormFields: string[] = [];
+    form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
+      // Validate step names
+      regFormFields.push(`registrationForm.steps.${stepIndex}.name.en`);
+      regFormFields.push(`registrationForm.steps.${stepIndex}.name.ta`);
 
-    if (isValid) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Incomplete Information',
-        description: 'Please fill out all the required fields in this step before proceeding.',
+      // Validate each field within the step
+      step.fields.forEach((field, fieldIndex) => {
+        regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`);
+        regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`);
+        // Add more fields if they are also required, e.g., options for select
       });
+    });
+    fieldsToValidate = regFormFields;
+  }
+  
+  const isValid = await form.trigger(fieldsToValidate as any, { shouldFocus: true });
+
+  if (isValid) {
+    setCurrentStep(prev => prev + 1);
+  } else {
+    // Find which fields are invalid and show them in the toast
+    const errors = form.formState.errors;
+    const errorKeys = Object.keys(errors);
+    
+    // Create a mapping from field path to human-readable label
+    const fieldLabelMap = new Map<string, string>();
+    form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
+      fieldLabelMap.set(`registrationForm.steps.${stepIndex}.name.en`, `Step ${stepIndex + 1} Name (EN)`);
+      fieldLabelMap.set(`registrationForm.steps.${stepIndex}.name.ta`, `Step ${stepIndex + 1} Name (TA)`);
+      step.fields.forEach((field, fieldIndex) => {
+        fieldLabelMap.set(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`, `Step ${stepIndex + 1}: ${field.label.en || 'Field Label (EN)'}`);
+        fieldLabelMap.set(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`, `Step ${stepIndex + 1}: ${field.label.ta || 'Field Label (TA)'}`);
+      });
+    });
+
+    // Check errors for the current step's fields
+    for (const path of fieldsToValidate) {
+      const pathParts = path.split('.');
+      let currentError: any = errors;
+      for (const part of pathParts) {
+        currentError = currentError?.[part];
+      }
+      
+      if (currentError) {
+        const friendlyName = fieldLabelMap.get(path) || path;
+        if (!invalidFieldLabels.includes(friendlyName)) {
+           invalidFieldLabels.push(friendlyName);
+        }
+      }
     }
-  };
+
+    toast({
+      variant: 'destructive',
+      title: 'Incomplete Information',
+      description: (
+        <div>
+            <p>Please fix the following fields:</p>
+            <ul className="list-disc pl-5 mt-2">
+                {invalidFieldLabels.map(label => <li key={label}>{label}</li>)}
+            </ul>
+        </div>
+      ),
+    });
+  }
+};
+
 
   const handlePrevious = () => {
     setCurrentStep(prev => prev - 1);
@@ -486,7 +536,7 @@ export function CourseForm({ course }: CourseFormProps) {
                                 </CardContent>
                             </Card>
                         ))}
-                        <Button type="button" variant="outline" size="sm" onClick={() => appendStep({id: uuidv4(), name: { en: `Step ${registrationSteps.length + 1}`, ta: `படி ${registrationSteps.length + 1}`}, fields: []})}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Step</Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => appendStep({id: uuidv4(), name: { en: `Step ${registrationSteps.length + 1}`, ta: `படி ${registrationSteps.length + 1}`}, fields: [], navigationRules: []})}><PlusCircle className="mr-2 h-4 w-4" /> Add Form Step</Button>
                     </CardContent>
                 </Card>
              </div>
