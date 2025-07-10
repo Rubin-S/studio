@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -262,7 +263,7 @@ interface CourseFormProps {
   course?: Course;
 }
 
-const steps = [
+const steps: {id: number, name: string, fields: (keyof CourseFormValues | `registrationForm.steps.${number}.name.en` | `registrationForm.steps.${number}.name.ta`)[]}[] = [
     { id: 1, name: 'Course Info', fields: ['title.en', 'title.ta', 'shortDescription.en', 'shortDescription.ta', 'detailedDescription.en', 'detailedDescription.ta', 'instructions.en', 'instructions.ta', 'whatWeOffer'] },
     { id: 2, name: 'Registration Form', fields: ['registrationForm'] },
     { id: 3, name: 'Time Slots', fields: ['slots'] },
@@ -347,8 +348,18 @@ export function CourseForm({ course }: CourseFormProps) {
   };
   
   const handleNext = async () => {
-    const fields = steps[currentStep - 1].fields;
-    const isValid = await form.trigger(fields as any, { shouldFocus: true });
+    let fieldsToValidate = steps[currentStep - 1].fields;
+
+    // For step 2, we need to validate all the dynamic step names as well.
+    if (currentStep === 2) {
+      const stepNameFields = registrationSteps.flatMap((_, index) => [
+        `registrationForm.steps.${index}.name.en`,
+        `registrationForm.steps.${index}.name.ta`,
+      ]);
+      fieldsToValidate = [...fieldsToValidate, ...stepNameFields] as any;
+    }
+    
+    const isValid = await form.trigger(fieldsToValidate as any, { shouldFocus: true });
 
     if (isValid) {
       setCurrentStep(prev => prev + 1);
