@@ -6,7 +6,7 @@ export type LocalizedString = {
 
 export type FormField = {
   id: string;
-  type: 'text' | 'email' | 'tel' | 'textarea' | 'select';
+  type: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'date';
   label: LocalizedString;
   placeholder?: LocalizedString;
   required: boolean;

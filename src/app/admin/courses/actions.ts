@@ -21,7 +21,7 @@ const localizedStringSchema = z.object({
 
 const formFieldSchema = z.object({
   id: z.string(),
-  type: z.enum(['text', 'email', 'tel', 'textarea', 'select']),
+  type: z.enum(['text', 'email', 'tel', 'textarea', 'select', 'date']),
   label: localizedStringSchema,
   placeholder: localizedStringSchema.optional(),
   required: z.boolean(),

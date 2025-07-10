@@ -8,7 +8,7 @@ import {
 import { deleteAllBookings } from '@/lib/bookings';
 import { deleteAllStudents } from '@/lib/students';
 import { v4 as uuidv4 } from 'uuid';
-import { format, addDays } from 'date-fns';
+import { format, addDays, addMinutes } from 'date-fns';
 import type { Course } from '@/lib/types';
 
 export async function deleteAllDataAction() {
@@ -36,76 +36,94 @@ export async function seedSampleDataAction() {
       throw new Error("Seeding failed because data deletion failed. Check server logs.");
   }
 
-  const carStep1 = uuidv4();
-  const carStep2 = uuidv4();
-  const carStep3 = uuidv4();
-  const carField1 = uuidv4();
+  const llrStep1 = uuidv4();
+  const llrStep2 = uuidv4();
+  const llrField1 = uuidv4();
+  
+  const generateTimeSlots = () => {
+    const slots = [];
+    let currentDate = new Date('2025-07-14');
+    for (let i = 0; i < 45; i++) {
+        const dateStr = format(currentDate, 'yyyy-MM-dd');
+        
+        let morningSlotTime = new Date(`${dateStr}T06:00:00`);
+        for(let j=0; j<3; j++) {
+            const startTime = format(morningSlotTime, 'HH:mm');
+            const endTime = format(addMinutes(morningSlotTime, 60), 'HH:mm');
+            slots.push({ id: uuidv4(), date: dateStr, startTime, endTime, bookedBy: null });
+            morningSlotTime = addMinutes(morningSlotTime, 70); // 60 min lesson + 10 min break
+        }
+        
+        let eveningSlotTime = new Date(`${dateStr}T14:30:00`);
+        for(let j=0; j<3; j++) {
+            const startTime = format(eveningSlotTime, 'HH:mm');
+            const endTime = format(addMinutes(eveningSlotTime, 60), 'HH:mm');
+            slots.push({ id: uuidv4(), date: dateStr, startTime, endTime, bookedBy: null });
+            eveningSlotTime = addMinutes(eveningSlotTime, 70); // 60 min lesson + 10 min break
+        }
+
+        currentDate = addDays(currentDate, 1);
+    }
+    return slots;
+  };
+
 
   const carCourse: Omit<Course, 'id'> = {
     title: {
-      en: 'Comprehensive Car Training',
-      ta: 'விரிவான கார் பயிற்சி',
+      en: '11-Class One-on-One Private Car Driving Lessons',
+      ta: '11-வகுப்பு ஒருவருக்கு ஒருவர் தனியார் கார் ஓட்டுநர் பாடங்கள்',
     },
-    thumbnail: 'https://placehold.co/600x400.png',
+    thumbnail: 'https://firebasestorage.googleapis.com/v0/b/smds-2025-bbf18.firebasestorage.app/o/Images%2FBook.png?alt=media&token=6e78ca2a-9f68-48f2-8a98-7482871bac78',
     shortDescription: {
-      en: 'Master driving with our comprehensive course covering theory and practical skills.',
-      ta: 'கோட்பாடு மற்றும் நடைமுறை திறன்களை உள்ளடக்கிய எங்கள் விரிவான பாடத்திட்டத்துடன் ஓட்டுவதில் தேர்ச்சி பெறுங்கள்.',
+      en: 'Get behind the wheel with confidence — safe, skilled, and road-ready in just 11 sessions.',
+      ta: 'நம்பிக்கையுடன் சக்கரத்தின் பின்னால் செல்லுங்கள் — பாதுகாப்பான, திறமையான, மற்றும் சாலைக்குத் தயாராக வெறும் 11 அமர்வுகளில்.',
     },
     detailedDescription: {
-      en: 'Our most popular course is designed to make you a confident and safe driver. We cover all aspects of driving, from understanding vehicle controls to navigating complex traffic situations. The course concludes with preparation for your RTO test.',
-      ta: 'எங்களின் மிகவும் பிரபலமான பாடநெறி உங்களை நம்பிக்கையுடனும் பாதுகாப்பாகவும் ஓட்டுநராக மாற்றுவதற்காக வடிவமைக்கப்பட்டுள்ளது. வாகனக் கட்டுப்பாடுகளைப் புரிந்துகொள்வது முதல் சிக்கலான போக்குவரத்துச் சூழல்களைக் கையாள்வது வரை, வாகனம் ஓட்டுவதன் அனைத்து அம்சங்களையும் நாங்கள் உள்ளடக்குகிறோம். இந்த பாடநெறி உங்கள் RTO சோதனைக்கான தயாரிப்புடன் முடிவடைகிறது.',
+      en: "Our 11-day Private Car Driving Training Program is perfect for beginners, returning drivers, or anyone looking to improve their skills. Each session is one-on-one with a certified instructor, ensuring personalized attention and faster progress.",
+      ta: "எங்கள் 11-நாள் தனியார் கார் ஓட்டுநர் பயிற்சித் திட்டம் ஆரம்பநிலை ஓட்டுநர்கள், மீண்டும் ஓட்டுபவர்கள் அல்லது தங்கள் திறமைகளை மேம்படுத்த விரும்பும் எவருக்கும் ஏற்றது. ஒவ்வொரு அமர்வும் ஒரு சான்றளிக்கப்பட்ட பயிற்றுவிப்பாளருடன் ஒருவருக்கு ஒருவர் நடைபெறுகிறது, இது தனிப்பயனாக்கப்பட்ட கவனத்தையும் வேகமான முன்னேற்றத்தையும் உறுதி செய்கிறது.",
     },
     whatWeOffer: [
-      { en: '15 Driving Sessions (1hr each)', ta: '15 ஓட்டுநர் அமர்வுகள் (தலா 1 மணி நேரம்)' },
-      { en: 'Full RTO License Assistance', ta: 'முழு RTO உரிம உதவி' },
-      { en: 'Expert, Patient Instructors', ta: 'நிபுணர், பொறுமையான பயிற்றுனர்கள்' },
-      { en: 'Modern Training Vehicles', ta: 'நவீன பயிற்சி வாகனங்கள்' },
+      { en: 'Tailored 1-on-1 instruction', ta: 'தனிப்பயனாக்கப்பட்ட 1-க்கு-1 அறிவுறுத்தல்' },
+      { en: 'Flexible scheduling with six slots per day', ta: 'ஒரு நாளைக்கு ஆறு நேரங்களுடன் நெகிழ்வான திட்டமிடல்' },
+      { en: 'Build confidence and practical skills quickly', ta: 'நம்பிக்கையையும் நடைமுறைத் திறன்களையும் விரைவாக உருவாக்குங்கள்' },
+      { en: 'Progress from beginner to advanced in 11 days', ta: '11 நாட்களில் ஆரம்பநிலையிலிருந்து மேம்பட்ட நிலைக்கு முன்னேறுங்கள்' },
     ],
-    price: { original: 8000, discounted: 7500 },
+    price: { original: 11000, discounted: 10000 },
     instructions: {
-      en: "Please bring your Learner's License (LLR) and Aadhar card for verification to the first class.",
-      ta: 'முதல் வகுப்பிற்கு சரிபார்ப்புக்காக உங்கள் ஓட்டுநர் உரிமம் (LLR) மற்றும் ஆதார் அட்டையை கொண்டு வரவும்.',
+      en: "Please bring a valid form of identification. If you possess a Learner's License (LLR), please bring it to your first class.",
+      ta: 'தயவுசெய்து செல்லுபடியாகும் அடையாள அட்டையைக் கொண்டு வாருங்கள். உங்களிடம் பழகுநர் உரிமம் (LLR) இருந்தால், அதை உங்கள் முதல் வகுப்பிற்கு கொண்டு வாருங்கள்.',
     },
-    youtubeLink: 'https://www.youtube.com/embed/videoseries?list=PLgY5_1Zg0hAQ_c64D8s-wkw_p26c-g4-B',
-    documentUrl: '',
+    youtubeLink: '',
+    documentUrl: 'https://docs.google.com/document/d/1Nij2NJwjaohHZYvHEPIORwb_8_3cigB1IdmddikmJ-s/edit?usp=sharing',
     registrationForm: {
       steps: [
         {
-          id: carStep1,
+          id: llrStep1,
           name: { en: 'Personal Details', ta: 'தனிப்பட்ட விபரங்கள்' },
           fields: [
-            { id: uuidv4(), type: 'text', required: true, label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' }, options: [] },
-            { id: carField1, type: 'select', required: true, label: { en: 'Have LLR?', ta: 'LLR உள்ளதா?' }, placeholder: { en: 'Please select an option', ta: 'ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
+            { id: uuidv4(), type: 'text', required: true, label: { en: 'Name', ta: 'பெயர்' }, placeholder: { en: 'eg: Ganesh', ta: 'எ.கா: கணேஷ்' }, options: [] },
+            { id: uuidv4(), type: 'date', required: true, label: { en: 'Date of birth', ta: 'பிறந்த தேதி' }, placeholder: { en: 'DD-MM-YYYY', ta: 'DD-MM-YYYY' }, options: [] },
+            { id: uuidv4(), type: 'text', required: true, label: { en: 'Residential City/Town/Village', ta: 'குடியிருப்பு நகரம்/நகரம்/கிராமம்' }, placeholder: { en: 'Thiyagadurgam', ta: 'தியாகதுருகம்' }, options: [] },
+            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: 'eg: 98xxxxxxxx', ta: 'எ.கா: 98xxxxxxxx' }, options: [] },
+            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email', ta: 'மின்னஞ்சல்' }, placeholder: { en: 'example@abc.com', ta: 'example@abc.com' }, options: [] },
+            { id: llrField1, type: 'select', required: true, label: { en: "Do you already have LLR?", ta: 'உங்களிடம் ஏற்கனவே LLR உள்ளதா?' }, placeholder: { en: 'Please select an option', ta: 'ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
           ],
            navigationRules: [
-            { fieldId: carField1, value: 'No', nextStepId: carStep3 }
+            { fieldId: llrField1, value: 'Yes', nextStepId: uuidv4() } // No next step for Yes, effectively ending form
           ]
         },
         {
-          id: carStep2,
-          name: { en: 'License Details', ta: 'உரிம விவரங்கள்' },
+          id: llrStep2,
+          name: { en: 'LLR Assistance', ta: 'LLR உதவி' },
           fields: [
-            { id: uuidv4(), type: 'text', required: true, label: { en: "Learner's License Number", ta: 'பழகுநர் உரிம எண்' }, placeholder: { en: 'TN-32-A-12345', ta: 'TN-32-A-12345' }, options: [] }
+            { id: uuidv4(), type: 'text', required: true, label: { en: "Aadhar Card Number", ta: 'ஆதார் அட்டை எண்' }, placeholder: { en: 'xxxx xxxx xxxx xxxx', ta: 'xxxx xxxx xxxx xxxx' }, options: [] },
+            { id: uuidv4(), type: 'tel', required: true, label: { en: "Phone Number linked with Aadhar Card", ta: 'ஆதார் அட்டையுடன் இணைக்கப்பட்ட தொலைபேசி எண்' }, placeholder: { en: 'eg: 98xxxxxxxx', ta: 'எ.கா: 98xxxxxxxx' }, options: [] }
           ],
           navigationRules: [],
         },
-        {
-          id: carStep3,
-          name: { en: 'Contact Information', ta: 'தொடர்பு தகவல்' },
-          fields: [
-            { id: uuidv4(), type: 'email', required: true, label: { en: 'Email Address', ta: 'மின்னஞ்சல் முகவரி' }, placeholder: { en: 'example@email.com', ta: 'example@email.com' }, options: [] },
-            { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: '+91 98765 43210', ta: '+91 98765 43210' }, options: [] },
-          ],
-          navigationRules: [],
-        }
       ]
     },
-    slots: [
-      { id: uuidv4(), date: format(addDays(new Date(), 1), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
-      { id: uuidv4(), date: format(addDays(new Date(), 1), 'yyyy-MM-dd'), startTime: '10:00', endTime: '11:00', bookedBy: null },
-      { id: uuidv4(), date: format(addDays(new Date(), 2), 'yyyy-MM-dd'), startTime: '09:00', endTime: '10:00', bookedBy: null },
-      { id: uuidv4(), date: format(addDays(new Date(), 3), 'yyyy-MM-dd'), startTime: '11:00', endTime: '12:00', bookedBy: null },
-    ],
+    slots: generateTimeSlots(),
   };
 
   const bikeCourse: Omit<Course, 'id'> = {

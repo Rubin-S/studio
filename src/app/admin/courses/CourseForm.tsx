@@ -35,7 +35,7 @@ const localizedStringSchema = z.object({
 
 const formFieldSchema = z.object({
   id: z.string().default(() => uuidv4()),
-  type: z.enum(['text', 'email', 'tel', 'textarea', 'select']).default('text'),
+  type: z.enum(['text', 'email', 'tel', 'textarea', 'select', 'date']).default('text'),
   label: localizedStringSchema,
   placeholder: localizedStringSchema.optional(),
   required: z.boolean().default(false),
@@ -158,7 +158,7 @@ function StepFieldsEditor({ control, stepIndex }: { control: Control<CourseFormV
                 <Button type="button" variant="destructive" size="icon" onClick={() => remove(fieldIndex)}><Trash2 className="h-4 w-4" /></Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`} render={({ field }) => <FormItem><FormLabel>Field Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="email">Email</SelectItem><SelectItem value="tel">Phone Number</SelectItem><SelectItem value="textarea">Text Area</SelectItem><SelectItem value="select">Select</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`} render={({ field }) => <FormItem><FormLabel>Field Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="email">Email</SelectItem><SelectItem value="tel">Phone Number</SelectItem><SelectItem value="textarea">Text Area</SelectItem><SelectItem value="select">Select</SelectItem><SelectItem value="date">Date</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
               <FormField name={`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.required`} render={({ field }) => <FormItem className="flex flex-row items-center justify-center space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Required</FormLabel></div></FormItem>} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -348,11 +348,10 @@ export function CourseForm({ course }: CourseFormProps) {
   };
   
 const handleNext = async () => {
-  let fieldsToValidate: string[] = steps[currentStep - 1].fields;
-  let invalidFieldLabels: string[] = [];
+  let fieldsToValidate: (string | `registrationForm.steps.${number}.name.en` | `registrationForm.steps.${number}.name.ta` | `registrationForm.steps.${number}.fields.${number}.label.en` | `registrationForm.steps.${number}.fields.${number}.label.ta`)[] = steps[currentStep - 1].fields;
 
   if (currentStep === 2) {
-    const regFormFields: string[] = [];
+    const regFormFields: (`registrationForm.steps.${number}.name.en` | `registrationForm.steps.${number}.name.ta` | `registrationForm.steps.${number}.fields.${number}.label.en` | `registrationForm.steps.${number}.fields.${number}.label.ta`)[] = [];
     form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
       regFormFields.push(`registrationForm.steps.${stepIndex}.name.en`);
       regFormFields.push(`registrationForm.steps.${stepIndex}.name.ta`);
@@ -371,33 +370,36 @@ const handleNext = async () => {
     setCurrentStep(prev => prev + 1);
   } else {
     const errors = form.formState.errors;
-    const errorPaths: string[] = [];
+    let invalidFieldLabels: string[] = [];
 
-    const getErrorPaths = (obj: any, prefix = '') => {
-        for(const key in obj){
+    const getErrorPaths = (obj: any, prefix = ''): string[] => {
+        return Object.keys(obj).reduce((acc: string[], key) => {
+            const newPrefix = prefix ? `${prefix}.${key}` : key;
             if (obj[key]?.message) {
-                 errorPaths.push(prefix + key);
+                 acc.push(newPrefix);
             } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                getErrorPaths(obj[key], `${prefix}${key}.`);
+                return acc.concat(getErrorPaths(obj[key], newPrefix));
             }
-        }
+            return acc;
+        }, []);
     }
     
-    getErrorPaths(errors);
+    const errorPaths = getErrorPaths(errors);
 
     const getFriendlyName = (path: string): string => {
         const parts = path.split('.');
         if (parts.includes('registrationForm')) {
             const stepIndex = parseInt(parts[3], 10);
             const fieldIndex = parseInt(parts[5], 10);
-            const stepName = form.getValues(`registrationForm.steps.${stepIndex}.name.en`);
+            const stepName = form.getValues(`registrationForm.steps.${stepIndex}.name.en`) || `Step ${stepIndex + 1}`;
             
             if (parts.includes('name')) {
-                return `Step ${stepIndex + 1} Name (${parts.pop()})`;
+                return `Step "${stepName}": Step Name (${parts.pop()?.toUpperCase()})`;
             }
             if (parts.includes('label')) {
                  const fieldType = form.getValues(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`);
-                 return `Step "${stepName}": Field ${fieldIndex+1} Label (${fieldType}, ${parts.pop()})`;
+                 const fieldName = form.getValues(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`) || `Field ${fieldIndex + 1}`;
+                 return `Step "${stepName}": Field "${fieldName}" Label (${parts.pop()?.toUpperCase()})`;
             }
         }
         return path;
@@ -448,7 +450,7 @@ const handleNext = async () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         
         <div className="flex items-center justify-center mb-8">
           {steps.map((step, index) => (
@@ -635,7 +637,7 @@ const handleNext = async () => {
             )}
 
             {currentStep === steps.length && (
-                <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting ? 'Saving...' : isEditing ? 'Update Course' : 'Create Course'}
                 </Button>
             )}
@@ -645,4 +647,3 @@ const handleNext = async () => {
     </Form>
   );
 }
-
