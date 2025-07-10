@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -106,10 +107,10 @@ export async function seedSampleDataAction() {
             { id: uuidv4(), type: 'text', required: true, label: { en: 'Residential City/Town/Village', ta: 'குடியிருப்பு நகரம்/நகரம்/கிராமம்' }, placeholder: { en: 'Thiyagadurgam', ta: 'தியாகதுருகம்' }, options: [] },
             { id: uuidv4(), type: 'tel', required: true, label: { en: 'Phone Number', ta: 'தொலைபேசி எண்' }, placeholder: { en: 'eg: 98xxxxxxxx', ta: 'எ.கா: 98xxxxxxxx' }, options: [] },
             { id: uuidv4(), type: 'email', required: true, label: { en: 'Email', ta: 'மின்னஞ்சல்' }, placeholder: { en: 'example@abc.com', ta: 'example@abc.com' }, options: [] },
-            { id: llrField1, type: 'select', required: true, label: { en: "Do you already have LLR?", ta: 'உங்களிடம் ஏற்கனவே LLR உள்ளதா?' }, placeholder: { en: 'Please select an option', ta: 'ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
+            { id: llrField1, type: 'select', required: true, label: { en: "Do you already have LLR?", ta: 'உங்களிடம் ஏற்கனவே LLR உள்ளதா?' }, options: [{ en: 'Yes', ta: 'ஆம்' }, { en: 'No', ta: 'இல்லை' }] }
           ],
            navigationRules: [
-            { fieldId: llrField1, value: 'Yes', nextStepId: uuidv4() } // No next step for Yes, effectively ending form
+            { fieldId: llrField1, value: 'Yes', nextStepId: 'END_FORM' }
           ]
         },
         {

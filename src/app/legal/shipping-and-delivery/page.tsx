@@ -25,7 +25,7 @@ export default function ShippingPolicyPage() {
                 <CardTitle className="font-headline text-3xl text-primary text-center">Shipping and Delivery Policy</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
-                <p><strong>Last Updated:</strong> August 1, 2024</p>
+                <p><strong>Last Updated:</strong> 1 August 2024</p>
                 <p>This policy outlines how we deliver our services. As we provide educational services and not physical goods, "shipping" and "delivery" refer to the confirmation and execution of our driving courses.</p>
 
                 <h2 className="text-xl font-semibold text-foreground pt-4">1. Service Delivery</h2>

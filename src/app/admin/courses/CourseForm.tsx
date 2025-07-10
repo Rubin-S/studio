@@ -26,7 +26,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 
 const localizedStringSchema = z.object({
   en: z.string().min(1, 'English value is required'),
@@ -347,80 +346,107 @@ export function CourseForm({ course }: CourseFormProps) {
     }
   };
   
-const handleNext = async () => {
-  let fieldsToValidate: (string | `registrationForm.steps.${number}.name.en` | `registrationForm.steps.${number}.name.ta` | `registrationForm.steps.${number}.fields.${number}.label.en` | `registrationForm.steps.${number}.fields.${number}.label.ta`)[] = steps[currentStep - 1].fields;
+  const getFieldsToValidate = () => {
+    const currentStepFields = steps[currentStep - 1].fields;
 
-  if (currentStep === 2) {
-    const regFormFields: (`registrationForm.steps.${number}.name.en` | `registrationForm.steps.${number}.name.ta` | `registrationForm.steps.${number}.fields.${number}.label.en` | `registrationForm.steps.${number}.fields.${number}.label.ta`)[] = [];
-    form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
-      regFormFields.push(`registrationForm.steps.${stepIndex}.name.en`);
-      regFormFields.push(`registrationForm.steps.${stepIndex}.name.ta`);
+    if (currentStep === 2) {
+      // For the registration form step, we need to validate all nested fields dynamically
+      const regFormFields: string[] = [];
+      form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
+        regFormFields.push(`registrationForm.steps.${stepIndex}.name.en`);
+        regFormFields.push(`registrationForm.steps.${stepIndex}.name.ta`);
 
-      step.fields.forEach((field, fieldIndex) => {
-        regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`);
-        regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`);
+        step.fields.forEach((field, fieldIndex) => {
+          regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`);
+          regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`);
+          // Also add placeholders if not a select field
+          if(field.type !== 'select' && field.placeholder) {
+              regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.placeholder.en`);
+              regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.placeholder.ta`);
+          }
+           // Also add options
+          if(field.type === 'select' && field.options) {
+              field.options.forEach((opt, optIndex) => {
+                regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.options.${optIndex}.en`);
+                regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.options.${optIndex}.ta`);
+              })
+          }
+        });
       });
-    });
-    fieldsToValidate = regFormFields;
-  }
-  
-  const isValid = await form.trigger(fieldsToValidate as any, { shouldFocus: true });
-
-  if (isValid) {
-    setCurrentStep(prev => prev + 1);
-  } else {
-    const errors = form.formState.errors;
-    let invalidFieldLabels: string[] = [];
-
-    const getErrorPaths = (obj: any, prefix = ''): string[] => {
-        return Object.keys(obj).reduce((acc: string[], key) => {
-            const newPrefix = prefix ? `${prefix}.${key}` : key;
-            if (obj[key]?.message) {
-                 acc.push(newPrefix);
-            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                return acc.concat(getErrorPaths(obj[key], newPrefix));
-            }
-            return acc;
-        }, []);
+      return regFormFields;
     }
-    
-    const errorPaths = getErrorPaths(errors);
-
-    const getFriendlyName = (path: string): string => {
-        const parts = path.split('.');
-        if (parts.includes('registrationForm')) {
-            const stepIndex = parseInt(parts[3], 10);
-            const fieldIndex = parseInt(parts[5], 10);
-            const stepName = form.getValues(`registrationForm.steps.${stepIndex}.name.en`) || `Step ${stepIndex + 1}`;
-            
-            if (parts.includes('name')) {
-                return `Step "${stepName}": Step Name (${parts.pop()?.toUpperCase()})`;
-            }
-            if (parts.includes('label')) {
-                 const fieldType = form.getValues(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`);
-                 const fieldName = form.getValues(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`) || `Field ${fieldIndex + 1}`;
-                 return `Step "${stepName}": Field "${fieldName}" Label (${parts.pop()?.toUpperCase()})`;
-            }
-        }
-        return path;
-    }
-    
-    invalidFieldLabels = errorPaths.map(path => getFriendlyName(path)).filter(name => !name.startsWith('registrationForm.steps.'));
-
-    toast({
-      variant: 'destructive',
-      title: 'Incomplete Information',
-      description: (
-        <div>
-            <p>Please fix the following fields:</p>
-            <ul className="list-disc pl-5 mt-2 text-xs">
-                {invalidFieldLabels.map(label => <li key={label}>{label}</li>)}
-            </ul>
-        </div>
-      ),
-    });
+    return currentStepFields;
   }
-};
+
+  const handleNext = async () => {
+    const fieldsToValidate = getFieldsToValidate();
+    const isValid = await form.trigger(fieldsToValidate as any, { shouldFocus: true });
+
+    if (isValid) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      // Enhanced error reporting
+      const errors = form.formState.errors;
+      let invalidFieldLabels: string[] = [];
+
+      const getErrorPaths = (obj: any, prefix = ''): string[] => {
+          return Object.keys(obj).reduce((acc: string[], key) => {
+              const newPrefix = prefix ? `${prefix}.${key}` : key;
+              if (obj[key]?.message) {
+                   acc.push(newPrefix);
+              } else if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+                  return acc.concat(getErrorPaths(obj[key], newPrefix));
+              } else if (Array.isArray(obj[key])) {
+                   obj[key].forEach((item: any, index: number) => {
+                        if (item) {
+                           acc.push(...getErrorPaths(item, `${newPrefix}.${index}`));
+                        }
+                   })
+              }
+              return acc;
+          }, []);
+      }
+      
+      const errorPaths = getErrorPaths(errors);
+
+      const getFriendlyName = (path: string): string => {
+          const parts = path.split('.');
+          if(parts[0] === 'whatWeOffer') {
+              const index = parseInt(parts[1], 10);
+              return `What We Offer - Item ${index + 1} (${parts[2]?.toUpperCase()})`;
+          }
+          if (parts.includes('registrationForm')) {
+              const stepIndex = parseInt(parts[3], 10);
+              const fieldIndex = parseInt(parts[5], 10);
+              const stepName = form.getValues(`registrationForm.steps.${stepIndex}.name.en`) || `Step ${stepIndex + 1}`;
+              
+              if (parts[4] === 'name') {
+                  return `Step "${stepName}": Step Name (${parts.pop()?.toUpperCase()})`;
+              }
+              if (parts[6] === 'label') {
+                   const fieldName = form.getValues(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`) || `Field ${fieldIndex + 1}`;
+                   return `Step "${stepName}": Field "${fieldName}" Label (${parts.pop()?.toUpperCase()})`;
+              }
+          }
+          return path.replace(/\.(en|ta)$/, '').replace(/_/g, ' ').replace(/\./g, ' > ');
+      }
+      
+      invalidFieldLabels = errorPaths.map(path => getFriendlyName(path)).filter(name => !name.startsWith('registrationForm.steps.'));
+
+      toast({
+        variant: 'destructive',
+        title: 'Incomplete Information',
+        description: (
+          <div>
+              <p>Please fix the following fields:</p>
+              <ul className="list-disc pl-5 mt-2 text-xs max-h-40 overflow-y-auto">
+                  {invalidFieldLabels.map((label, i) => <li key={i}>{label}</li>)}
+              </ul>
+          </div>
+        ),
+      });
+    }
+  };
 
 
   const handlePrevious = () => {
@@ -452,7 +478,7 @@ const handleNext = async () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-center flex-wrap mb-8">
           {steps.map((step, index) => (
             <React.Fragment key={step.id}>
               <div className="flex flex-col items-center">
@@ -471,7 +497,7 @@ const handleNext = async () => {
               </div>
               {index < steps.length - 1 && (
                 <div className={cn(
-                  "flex-1 h-1 mx-4 transition-colors",
+                  "flex-1 h-1 mx-2 sm:mx-4 transition-colors w-12 sm:w-auto",
                   currentStep > step.id ? "bg-primary" : "bg-muted"
                 )}/>
               )}

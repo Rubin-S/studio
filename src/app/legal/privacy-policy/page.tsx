@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
                 <CardTitle className="font-headline text-3xl text-primary text-center">Privacy Policy</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
-                <p><strong>Last Updated:</strong> August 1, 2024</p>
+                <p><strong>Last Updated:</strong> 1 August 2024</p>
                 <p>This is a template for a Privacy Policy. You should replace this content with your own policy details.</p>
                 
                 <h2 className="text-xl font-semibold text-foreground pt-4">1. Information We Collect</h2>

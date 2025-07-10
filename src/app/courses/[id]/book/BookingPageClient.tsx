@@ -107,15 +107,16 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
       if (field.required) {
         zodType = zodType.min(1, { message: `${t(field.label)} is required.` });
       } else {
-        zodType = zodType.optional();
+        zodType = zodType.optional().or(z.literal(''));
       }
       return schema.extend({ [fieldName]: zodType });
     }, z.object({}));
   }, [allFormFields, language, t]);
 
-  const form = useForm<Record<string, any>>({
+  const form = useForm<z.infer<typeof dynamicSchema>>({
     resolver: zodResolver(dynamicSchema),
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {},
   });
 
   useEffect(() => {
@@ -129,10 +130,31 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
             form.setValue(`${nameField.id}-${language}`, user.displayName, { shouldValidate: true });
         }
      }
-  }, [user, allFormFields, form, language]);
+  }, [user, allFormFields, language]);
 
 
-  const isFinalStep = currentStepIndex === registrationForm.steps.length - 1;
+  const isFinalStep = useMemo(() => {
+    const currentStep = registrationForm.steps[currentStepIndex];
+    if (!currentStep) return true; // Default to final if something is wrong
+
+    // Check navigation rules
+    if (currentStep.navigationRules) {
+      const formValues = form.getValues();
+      for (const rule of currentStep.navigationRules) {
+        const triggeringField = currentStep.fields.find(f => f.id === rule.fieldId);
+        if (triggeringField) {
+            const fieldValue = formValues[`${triggeringField.id}-${language}` as keyof typeof formValues];
+            if (fieldValue === rule.value && rule.nextStepId === 'END_FORM') {
+                return true; // This rule says to end the form
+            }
+        }
+      }
+    }
+    
+    // Default case: it's the final step if it's the last one in the array
+    return currentStepIndex === registrationForm.steps.length - 1;
+  }, [currentStepIndex, registrationForm.steps, form.getValues(), language]);
+
 
   const onFinalSubmit = async (data: z.infer<typeof dynamicSchema>, paymentId: string) => {
     if (!selectedSlotId || !user) {
@@ -201,7 +223,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
             userId: user?.uid
         },
         theme: {
-            color: "#6A1B9A" // primary color
+            color: "#3F51B5" // primary color
         },
         modal: {
           ondismiss: () => {
@@ -226,6 +248,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
       return;
     }
 
+    // This check is now based on the memoized `isFinalStep`
     if (isFinalStep) {
         handleProceedToPayment();
         return;
@@ -318,6 +341,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   }
 
   const currentStepData = registrationForm.steps[currentStepIndex];
+  const totalSteps = registrationForm.steps.length;
 
   return (
     <>
@@ -326,9 +350,9 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
       <CardHeader>
         <CardTitle className="text-center font-headline text-3xl font-bold text-primary">{t({ en: 'Book Your Slot', ta: 'உங்கள் இடத்தை முன்பதிவு செய்யுங்கள்' })}</CardTitle>
         <CardDescription className="text-center">{t(course.title)}</CardDescription>
-         <div className="pt-4 px-8">
-            <Progress value={(currentStepIndex + 1) / (registrationForm.steps.length) * 100} />
-            <p className="text-center text-sm text-muted-foreground mt-2">{t(currentStepData.name)} ({currentStepIndex + 1} / {registrationForm.steps.length})</p>
+         <div className="pt-4 px-2 md:px-8">
+            <Progress value={(currentStepIndex + 1) / totalSteps * 100} />
+            <p className="text-center text-sm text-muted-foreground mt-2">{t(currentStepData.name)} ({currentStepIndex + 1} / {totalSteps})</p>
          </div>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -340,7 +364,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1)) || !availableDays.some(d => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))}
+                    disabled={(date) => date < new Date(new Date().toDateString()) || !availableDays.some(d => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))}
                     modifiers={{ available: availableDays }}
                     modifiersStyles={{ available: { border: "2px solid hsl(var(--primary))" } }}
                     className="rounded-md border"
@@ -380,7 +404,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
         <div className={cn(!selectedSlotId && "opacity-50 pointer-events-none")}>
             <h3 className="font-semibold mb-4 text-center">{t({ en: "2. Your Details", ta: "2. உங்கள் விவரங்கள்"})}</h3>
             <FormProvider {...form}>
-            <form onSubmit={(e) => { e.preventDefault(); handleNextStep(); }}>
+            <form onSubmit={(e) => { e.preventDefault() }}>
             <div className="space-y-4">
                  {currentStepData.fields.map((field) => renderFormField(field, language, t))}
                  
@@ -390,7 +414,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
                     </Button>
                     
                     {isFinalStep ? (
-                        <Button type="submit" disabled={!selectedSlotId || isProcessingPayment}>
+                        <Button type="button" onClick={handleProceedToPayment} disabled={!selectedSlotId || isProcessingPayment}>
                            {isProcessingPayment ? t({ en: 'Processing...', ta: 'செயலாக்குகிறது...' }) : (
                              <><CreditCard className="mr-2 h-4 w-4" />{t({ en: 'Proceed to Payment', ta: 'பணம் செலுத்த தொடரவும்' })}</>
                            )}
