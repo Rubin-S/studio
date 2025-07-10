@@ -101,7 +101,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
       let zodType;
       switch (field.type) {
         case 'email': zodType = z.string().email({ message: "Invalid email address." }); break;
-        case 'tel': zodType = z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: "Invalid phone number."}); break;
+        case 'tel': zodType = z.string().min(10, { message: "Invalid phone number." }).regex(/^\+?[1-9]\d{9,14}$/, { message: "Invalid phone number format."}); break;
         default: zodType = z.string();
       }
       if (field.required) {
@@ -113,7 +113,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     }, z.object({}));
   }, [allFormFields, language, t]);
 
-  const form = useForm<z.infer<typeof dynamicSchema>>({
+  const form = useForm<Record<string, any>>({
     resolver: zodResolver(dynamicSchema),
     mode: 'onChange',
     defaultValues: {},
@@ -130,7 +130,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
             form.setValue(`${nameField.id}-${language}`, user.displayName, { shouldValidate: true });
         }
      }
-  }, [user, allFormFields, language]);
+  }, [user, allFormFields, language, form]);
 
 
   const isFinalStep = useMemo(() => {
@@ -153,10 +153,10 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
     
     // Default case: it's the final step if it's the last one in the array
     return currentStepIndex === registrationForm.steps.length - 1;
-  }, [currentStepIndex, registrationForm.steps, form.getValues(), language]);
+  }, [currentStepIndex, registrationForm.steps, form, language]);
 
 
-  const onFinalSubmit = async (data: z.infer<typeof dynamicSchema>, paymentId: string) => {
+  const onFinalSubmit = async (data: Record<string, any>, paymentId: string) => {
     if (!selectedSlotId || !user) {
       toast({ variant: 'destructive', title: 'Error', description: 'Please select a slot and ensure you are logged in.' });
       setIsProcessingPayment(false);
@@ -241,7 +241,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
   const handleNextStep = async () => {
     const currentStep = registrationForm.steps[currentStepIndex];
     const fieldNamesToValidate = currentStep.fields.map(f => `${f.id}-${language}`);
-    const isValid = await form.trigger(fieldNamesToValidate as any);
+    const isValid = await form.trigger(fieldNamesToValidate);
 
     if (!isValid) {
       toast({ variant: 'destructive', title: 'Incomplete', description: 'Please fill all required fields.' });
@@ -364,7 +364,7 @@ export default function BookingPageClient({ course }: BookingPageClientProps) {
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date(new Date().toDateString()) || !availableDays.some(d => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))}
+                    disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) || !availableDays.some(d => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))}
                     modifiers={{ available: availableDays }}
                     modifiersStyles={{ available: { border: "2px solid hsl(var(--primary))" } }}
                     className="rounded-md border"
