@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Poppins, Source_Code_Pro } from 'next/font/google';
+import { Inter, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -13,7 +13,7 @@ const fontBody = Inter({
   variable: '--font-body',
 });
 
-const fontHeadline = Poppins({
+const fontHeadline = Inter({
   subsets: ['latin'],
   weight: ['500', '600', '700', '800'],
   display: 'swap',
