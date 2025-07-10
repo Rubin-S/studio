@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -290,7 +289,7 @@ export function CourseForm({ course }: CourseFormProps) {
         instructions: { en: '', ta: '' },
         youtubeLink: '',
         documentUrl: '',
-        registrationForm: { steps: [{ id: uuidv4(), name: { en: 'Step 1', ta: 'படி 1' }, fields: [], navigationRules: [] }] },
+        registrationForm: { steps: [{ id: uuidv4(), name: { en: 'Step 1', ta: 'படி 1' }, fields: [{ id: uuidv4(), type: 'text', label: { en: 'Full Name', ta: 'முழு பெயர்' }, placeholder: { en: 'Enter your full name', ta: 'உங்கள் முழு பெயரை உள்ளிடவும்' }, required: true, options: [] }], navigationRules: [] }] },
         slots: [],
     },
   });
@@ -349,22 +348,18 @@ export function CourseForm({ course }: CourseFormProps) {
   };
   
 const handleNext = async () => {
-  let fieldsToValidate = steps[currentStep - 1].fields;
+  let fieldsToValidate: string[] = steps[currentStep - 1].fields;
   let invalidFieldLabels: string[] = [];
 
   if (currentStep === 2) {
-    // Dynamically build the list of all fields to validate for the registration form step
     const regFormFields: string[] = [];
     form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
-      // Validate step names
       regFormFields.push(`registrationForm.steps.${stepIndex}.name.en`);
       regFormFields.push(`registrationForm.steps.${stepIndex}.name.ta`);
 
-      // Validate each field within the step
       step.fields.forEach((field, fieldIndex) => {
         regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`);
         regFormFields.push(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`);
-        // Add more fields if they are also required, e.g., options for select
       });
     });
     fieldsToValidate = regFormFields;
@@ -375,36 +370,40 @@ const handleNext = async () => {
   if (isValid) {
     setCurrentStep(prev => prev + 1);
   } else {
-    // Find which fields are invalid and show them in the toast
     const errors = form.formState.errors;
-    const errorKeys = Object.keys(errors);
-    
-    // Create a mapping from field path to human-readable label
-    const fieldLabelMap = new Map<string, string>();
-    form.getValues().registrationForm.steps.forEach((step, stepIndex) => {
-      fieldLabelMap.set(`registrationForm.steps.${stepIndex}.name.en`, `Step ${stepIndex + 1} Name (EN)`);
-      fieldLabelMap.set(`registrationForm.steps.${stepIndex}.name.ta`, `Step ${stepIndex + 1} Name (TA)`);
-      step.fields.forEach((field, fieldIndex) => {
-        fieldLabelMap.set(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.en`, `Step ${stepIndex + 1}: ${field.label.en || 'Field Label (EN)'}`);
-        fieldLabelMap.set(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.label.ta`, `Step ${stepIndex + 1}: ${field.label.ta || 'Field Label (TA)'}`);
-      });
-    });
+    const errorPaths: string[] = [];
 
-    // Check errors for the current step's fields
-    for (const path of fieldsToValidate) {
-      const pathParts = path.split('.');
-      let currentError: any = errors;
-      for (const part of pathParts) {
-        currentError = currentError?.[part];
-      }
-      
-      if (currentError) {
-        const friendlyName = fieldLabelMap.get(path) || path;
-        if (!invalidFieldLabels.includes(friendlyName)) {
-           invalidFieldLabels.push(friendlyName);
+    const getErrorPaths = (obj: any, prefix = '') => {
+        for(const key in obj){
+            if (obj[key]?.message) {
+                 errorPaths.push(prefix + key);
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                getErrorPaths(obj[key], `${prefix}${key}.`);
+            }
         }
-      }
     }
+    
+    getErrorPaths(errors);
+
+    const getFriendlyName = (path: string): string => {
+        const parts = path.split('.');
+        if (parts.includes('registrationForm')) {
+            const stepIndex = parseInt(parts[3], 10);
+            const fieldIndex = parseInt(parts[5], 10);
+            const stepName = form.getValues(`registrationForm.steps.${stepIndex}.name.en`);
+            
+            if (parts.includes('name')) {
+                return `Step ${stepIndex + 1} Name (${parts.pop()})`;
+            }
+            if (parts.includes('label')) {
+                 const fieldType = form.getValues(`registrationForm.steps.${stepIndex}.fields.${fieldIndex}.type`);
+                 return `Step "${stepName}": Field ${fieldIndex+1} Label (${fieldType}, ${parts.pop()})`;
+            }
+        }
+        return path;
+    }
+    
+    invalidFieldLabels = errorPaths.map(path => getFriendlyName(path)).filter(name => !name.startsWith('registrationForm.steps.'));
 
     toast({
       variant: 'destructive',
@@ -412,7 +411,7 @@ const handleNext = async () => {
       description: (
         <div>
             <p>Please fix the following fields:</p>
-            <ul className="list-disc pl-5 mt-2">
+            <ul className="list-disc pl-5 mt-2 text-xs">
                 {invalidFieldLabels.map(label => <li key={label}>{label}</li>)}
             </ul>
         </div>
@@ -449,7 +448,7 @@ const handleNext = async () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
         
         <div className="flex items-center justify-center mb-8">
           {steps.map((step, index) => (
@@ -636,9 +635,9 @@ const handleNext = async () => {
             )}
 
             {currentStep === steps.length && (
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Saving...' : isEditing ? 'Update Course' : 'Create Course'}
-              </Button>
+                <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? 'Saving...' : isEditing ? 'Update Course' : 'Create Course'}
+                </Button>
             )}
           </div>
         </div>
@@ -646,3 +645,4 @@ const handleNext = async () => {
     </Form>
   );
 }
+
