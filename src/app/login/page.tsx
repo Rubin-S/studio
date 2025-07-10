@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import React, { Suspense } from 'react';
 
 function LoginClient() {
   const router = useRouter();
@@ -27,7 +29,7 @@ function LoginClient() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (user.email === 'admin@smds.com') {
+      if (user.email === 'rubins022007@gmail.com') {
         router.replace('/admin');
       } else {
         router.replace(redirectTo === '/' ? '/dashboard' : redirectTo);
@@ -142,12 +144,12 @@ function LoginClient() {
 
 export default function LoginPage() {
     return (
-        <Suspense fallback={
-            <div className="flex min-h-screen items-center justify-center bg-secondary">
-                <p>Loading...</p>
-            </div>
-        }>
-            <LoginClient />
-        </Suspense>
+      <Suspense fallback={
+          <div className="flex min-h-screen items-center justify-center bg-secondary">
+              <p>Loading...</p>
+          </div>
+      }>
+          <LoginClient />
+      </Suspense>
     )
 }

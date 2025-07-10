@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -58,7 +59,7 @@ export default function Header() {
           ) : user ? (
             <>
               <Button asChild variant="ghost" size="sm">
-                <Link href={user.email === 'admin@smds.com' ? '/admin' : '/dashboard'}>
+                <Link href={user.email === 'rubins022007@gmail.com' ? '/admin' : '/dashboard'}>
                   <LayoutDashboard className="mr-2" />
                   Dashboard
                 </Link>
@@ -107,7 +108,7 @@ export default function Header() {
               ) : user ? (
                 <>
                   <Button asChild className="w-full" variant="outline" onClick={closeMenu}>
-                     <Link href={user.email === 'admin@smds.com' ? '/admin' : '/dashboard'}>
+                     <Link href={user.email === 'rubins022007@gmail.com' ? '/admin' : '/dashboard'}>
                       <LayoutDashboard className="mr-2" />
                       Dashboard
                     </Link>

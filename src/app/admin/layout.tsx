@@ -1,12 +1,12 @@
+
 'use client'
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Car, LogOut, UserCircle, ClipboardList, Settings, Users } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, UserCircle, ClipboardList, Settings, Users, ShieldCheck } from 'lucide-react';
 import { Sidebar, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!loading) {
         if (!user) {
           router.replace('/login');
-        } else if (user.email !== 'admin@smds.com') {
+        } else if (user.email !== 'rubins022007@gmail.com') {
           router.replace('/dashboard');
         }
       }
@@ -33,10 +33,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/courses', label: 'Courses', icon: Car },
         { href: '/admin/bookings', label: 'Bookings', icon: ClipboardList },
         { href: '/admin/students', label: 'Students', icon: Users },
+        { href: '/admin/roles', label: 'Roles & Permissions', icon: ShieldCheck },
         { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 
-    if (loading || !user || user.email !== 'admin@smds.com') {
+    if (loading || !user || user.email !== 'rubins022007@gmail.com') {
         return (
             <div className="flex h-screen w-full items-center justify-center">
                 <p>Loading admin area...</p>
